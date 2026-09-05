@@ -42,11 +42,12 @@ const EntryCard = ({ entry }) => {
       <p style={{ fontSize: 16, color: "#97A1B3", lineHeight: 1.6, margin: 0 }}>
         {entry.description}
       </p>
-      <div style={{ display: "flex", gap: "12px", marginTop: 12 }}>
+      <div style={{ display: "flex", gap: "12px", marginTop: 12, alignItems: "center" }}>
         <p style={labelStyle}>Contributor:</p>
-        <p style={valueStyle}>{entry.contributor}</p>
+        <span style={valueStyle}>---</span>
+        <p style={{...labelStyle, margin: "0 4px"}}>---</p>
         <p style={labelStyle}>Place:</p>
-        <p style={valueStyle}>{entry.place}</p>
+        <span style={valueStyle}>---</span>
       </div>
     </div>
   );
