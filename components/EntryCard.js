@@ -33,9 +33,12 @@ const EntryCard = ({ entry }) => {
       {entry.image && (
         <div style={imageStyle}></div>
       )}
-      <h3 style={{ fontSize: 20, fontWeight: 700, color: "#FFFFFF", margin: "0 0 12px" }}>
-        {entry.khmerTitle}
+      <h3 style={{ fontSize: 20, fontWeight: 700, color: "#FFFFFF", margin: "0 0 8px" }}>
+        {entry.title}
       </h3>
+      <h4 style={{ fontSize: 16, fontWeight: 500, color: "#D0D8E8", margin: "0 0 8px" }}>
+        {entry.khmerTitle}
+      </h4>
       <p style={{ fontSize: 16, color: "#97A1B3", lineHeight: 1.6, margin: 0 }}>
         {entry.description}
       </p>
