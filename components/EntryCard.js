@@ -19,10 +19,22 @@ const EntryCard = ({ entry }) => {
     margin: "6px 0 0",
   };
 
+  const imageStyle = {
+    width: "100%",
+    height: 180,
+    backgroundColor: "#2E3644",
+    borderRadius: 8,
+    marginBottom: 16,
+    overflow: "hidden",
+  };
+
   return (
     <div style={cardStyle}>
+      {entry.image && (
+        <div style={imageStyle}></div>
+      )}
       <h3 style={{ fontSize: 20, fontWeight: 700, color: "#FFFFFF", margin: "0 0 12px" }}>
-        {entry.title}
+        {entry.khmerTitle}
       </h3>
       <p style={{ fontSize: 16, color: "#97A1B3", lineHeight: 1.6, margin: 0 }}>
         {entry.description}
