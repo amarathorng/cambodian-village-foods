@@ -44,10 +44,10 @@ const EntryCard = ({ entry }) => {
       </p>
       <div style={{ display: "flex", gap: "12px", marginTop: 12, alignItems: "center" }}>
         <p style={labelStyle}>Contributor:</p>
-        <span style={valueStyle}>---</span>
-        <p style={{...labelStyle, margin: "0 4px"}}>---</p>
+        <span style={valueStyle}>{entry.contributor}</span>
+        <p style={{...labelStyle, margin: "0 4px"}}>|</p>
         <p style={labelStyle}>Place:</p>
-        <span style={valueStyle}>---</span>
+        <span style={valueStyle}>{entry.place}</span>
       </div>
     </div>
   );
