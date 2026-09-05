@@ -74,7 +74,7 @@ export default function Home() {
         <p style={styles.cardValue}>{collection.source}</p>
       </div>
 
-      {entries.map((entry) => <EntryCard entry={entry} />)}
+      {entries.map((entry) => <EntryCard key={entry.id} entry={entry} />)}
 
       <p style={styles.count}>entries in the archive: {entries.length}</p>
 
