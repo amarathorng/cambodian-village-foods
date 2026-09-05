@@ -8,6 +8,7 @@ const entries = [
     contributor: "My Mother",
     place: "Floating village near Siem Reap, Cambodia",
     province: "Siem Reap",
+    image: "amok-cover.jpg",
   },
   {
     id: 2,
@@ -18,6 +19,7 @@ const entries = [
     contributor: "My Grandmother",
     place: "Praek Sdey village, Pursat province, Cambodia",
     province: "Pursat",
+    image: "nom-krouk-cover.jpg",
   },
 ];
 
