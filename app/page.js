@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import collection from "../collection.config.js";
 import EntryCard from "../components/EntryCard";
 import entries from "../data/entries.js";
