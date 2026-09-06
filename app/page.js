@@ -1,7 +1,8 @@
+"use client";
+
 import collection from "../collection.config.js";
 import EntryCard from "../components/EntryCard";
 import entries from "../data/entries.js";
-use client;
 
 const styles = {
   wrap: {
