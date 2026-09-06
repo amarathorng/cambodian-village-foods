@@ -65,11 +65,15 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredEntries = entries.filter((entry) => {
-    const term = searchTerm.toLowerCase().trim();
+    const term = searchTerm.trim();
     if (!term) return true;
-    const matchesTitle = entry.title.toLowerCase().includes(term);
-    const matchesDesc = entry.description.toLowerCase().includes(term);
-    return matchesTitle || matchesDesc;
+    const lowerTerm = term.toLowerCase();
+    const lowerTitle = entry.title.toLowerCase();
+    const lowerDesc = entry.description.toLowerCase();
+    const khmerTitle = entry.khmerTitle;
+    const matchesEnglish = lowerTitle.includes(lowerTerm) || lowerDesc.includes(lowerTerm);
+    const matchesKhmer = khmerTitle.includes(term);
+    return matchesEnglish || matchesKhmer;
   });
 
   return (
@@ -112,13 +116,11 @@ export default function Home() {
         </>
       ) : (
         <p style={{color: "#97A1B3", marginTop: 32, fontSize: 14}}>
-          {searchTerm.length > 0 ? "No entries found" : ""}
+          {searchTerm.length > 0 ? "No entries found\nKhmer: មិនជំនួស" : ""}
         </p>
       )}
 
-      {filteredEntries.length === 0 && searchTerm.length > 0 && (
-        <p style={{color: "#97A1B3", marginTop: 8, fontSize: 14}}>No entries found</p>
-      )}
+      
 
       <footer style={styles.footer}>
         Built in ICT 340 — Vibe Coding, American University of Phnom Penh, Fall
