@@ -1,6 +1,7 @@
 import collection from "../collection.config.js";
 import EntryCard from "../components/EntryCard";
 import entries from "../data/entries.js";
+use client;
 
 const styles = {
   wrap: {
@@ -59,11 +60,39 @@ const styles = {
 };
 
 export default function Home() {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredEntries = entries.filter((entry) => {
+    const term = searchTerm.toLowerCase().trim();
+    if (!term) return true;
+    const matchesTitle = entry.title.toLowerCase().includes(term);
+    const matchesDesc = entry.description.toLowerCase().includes(term);
+    return matchesTitle || matchesDesc;
+  });
+
   return (
     <main style={styles.wrap}>
       <p style={styles.kicker}>KHMER LIVING ARCHIVE</p>
       <h1 style={styles.title}>{collection.name}</h1>
       <p style={styles.description}>{collection.description}</p>
+
+      <div style={{marginBottom: 32, marginTop: 16}}>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search entries..."
+          style={{
+            padding: "8px 16px",
+            fontSize: 14,
+            border: "1px solid #2E3644",
+            borderRadius: 6,
+            backgroundColor: "#1C222C",
+            color: "#FFFFFF",
+            "&:focus": {outline: "none", borderColor: "#2EE6A8"},
+          }}
+        />
+      </div>
 
       <div style={styles.card}>
         <p style={styles.cardLabel}>CURATED BY</p>
@@ -74,9 +103,20 @@ export default function Home() {
         <p style={styles.cardValue}>{collection.source}</p>
       </div>
 
-      {entries.map((entry) => <EntryCard key={entry.id} entry={entry} />)}
+      {filteredEntries.length > 0 ? (
+        <>
+          {filteredEntries.map((entry) => <EntryCard key={entry.id} entry={entry} />)}
+          <p style={styles.count}>entries in the archive: {filteredEntries.length}</p>
+        </>
+      ) : (
+        <p style={{color: "#97A1B3", marginTop: 32, fontSize: 14}}>
+          {searchTerm.length > 0 ? "No entries found" : ""}
+        </p>
+      )}
 
-      <p style={styles.count}>entries in the archive: {entries.length}</p>
+      {filteredEntries.length === 0 && searchTerm.length > 0 && (
+        <p style={{color: "#97A1B3", marginTop: 8, fontSize: 14}}>No entries found</p>
+      )}
 
       <footer style={styles.footer}>
         Built in ICT 340 — Vibe Coding, American University of Phnom Penh, Fall
