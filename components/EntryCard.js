@@ -28,11 +28,13 @@ const EntryCard = ({ entry }) => {
     overflow: "hidden",
   };
 
+  // const imgSrc = entry.image ? `/assets/${entry.image}` : null;
+
   return (
     <div style={cardStyle}>
-      {entry.image && (
-        <div style={imageStyle}></div>
-      )}
+      {/* {entry.image && (
+        <img src={imgSrc} style={{ width: "100%", height: "100%", objectFit: "cover" }} alt={entry.title} />
+      )} */}
       <h3 style={{ fontSize: 20, fontWeight: 700, color: "#FFFFFF", margin: "0 0 8px" }}>
         {entry.title}
       </h3>

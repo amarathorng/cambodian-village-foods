@@ -87,18 +87,43 @@ export default function Home() {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search entries..."
+          placeholder="Search foods…"
           style={{
-            padding: "8px 16px",
+            padding: "8px 16px 8px 34px",
             fontSize: 14,
             border: "1px solid #2E3644",
             borderRadius: 6,
             backgroundColor: "#1C222C",
             color: "#FFFFFF",
-            "&:focus": {outline: "none", borderColor: "#2EE6A8"},
+            "&:focus": {outline: "none", borderColor: "#2EE6A8", boxShadow: "0 0 0 3px rgba(46, 230, 168, 0.15)"},
           }}
         />
-      </div>
+
+          {/* Clear button */}
+          {searchTerm.trim().length > 0 && (
+            <button
+              style={{
+                position: "absolute",
+                right: 12,
+                top: 12,
+                width: 20,
+                height: 20,
+                background: "none",
+                border: "none",
+                color: "#6B7280",
+                padding: 0,
+                cursor: "pointer",
+                fontSize: 12,
+                lineHeight: 1,
+                "&:hover": {color: "#FFFFFF"}
+              }}
+              onClick={() => setSearchTerm("")}
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+          )}
+        </div>
 
       <div style={styles.card}>
         <p style={styles.cardLabel}>CURATED BY</p>
