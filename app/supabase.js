@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/ssr";
 
+// Server-side: create Supabase client with request object
+// Used in Server Components and route handlers
 export const createSupabaseClient = (request) => {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -10,7 +12,6 @@ export const createSupabaseClient = (request) => {
       },
       auth: {
         persistSession: true,
-        storage: typeof window !== "undefined" ? localStorage : false,
       },
     }
   );

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import collection from "../collection.config.js";
+import { useState } from "react";
+import { useSupabase } from "@supabase/ssr";
 import EntryCard from "../components/EntryCard";
 import entries from "../data/entries.js";
 

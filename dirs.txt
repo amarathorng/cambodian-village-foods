@@ -1,0 +1,11 @@
+﻿
+
+    Directory: D:\Fall Semester 2026\ICT340-Vibe-Coding\cambodian-village-foods\app
+
+
+Mode                 LastWriteTime         Length Name                                                                                              
+----                 -------------         ------ ----                                                                                              
+d-----         9/20/2026  11:16 PM                api                                                                                               
+
+
+
