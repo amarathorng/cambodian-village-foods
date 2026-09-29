@@ -1,24 +1,27 @@
-// app/api/auth/login/route.js
 import { createSupabaseClient } from "../../../supabase";
-import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 
 export async function POST(request) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
-  
-  const supabase = createSupabaseClient({ request });
-  
+
+  const { supabase, response } = createSupabaseClient(request);
+
   const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
-  
+
   if (error) {
-    // Handle authentication error
-    return Response.json({ error: error.message }, { status: 401 });
+    // Plain error handling: never leak the underlying auth message
+    return NextResponse.json(
+      { error: "Invalid email or password" },
+      { status: 401 }
+    );
   }
-  
-  // Authentication successful, redirect to home
-  redirect("/");
+
+  // Authentication successful, redirect home with the auth cookies attached
+  const url = new URL("/", request.url);
+  return NextResponse.redirect(url, { headers: response.headers });
 }

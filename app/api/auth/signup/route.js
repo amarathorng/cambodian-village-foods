@@ -1,13 +1,13 @@
 // app/api/auth/signup/route.js
 import { createSupabaseClient } from "../../../supabase";
-import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 
 export async function POST(request) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
 
-  const supabase = createSupabaseClient({ request });
+  const { supabase, response } = createSupabaseClient(request);
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -15,9 +15,10 @@ export async function POST(request) {
   });
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ error: error.message }, { status: 400 });
   }
 
-  // Redirect to home on successful sign up
-  redirect("/");
+  // Redirect home on successful sign up, with the auth cookies attached
+  const url = new URL("/", request.url);
+  return NextResponse.redirect(url, { headers: response.headers });
 }

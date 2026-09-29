@@ -1,7 +1,6 @@
+"use client";
 import { useState } from "react";
-
-import { useState } from "react";
-import { useSupabase } from "@supabase/ssr";
+import { createBrowserClient } from "@supabase/ssr";
 
 const styles = {
   wrap: {
@@ -81,7 +80,10 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { supabase } = useSupabase();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -93,7 +95,7 @@ export default function Login() {
     });
 
     if (error) {
-      setError(error.message || "Invalid email or password");
+      setError("Invalid email or password");
       return;
     }
 
@@ -108,7 +110,7 @@ export default function Login() {
 
       {error && <p style={styles.error}>{error}</p>}
 
-      <form action="/api/auth/login" method="POST">
+      <form onSubmit={handleSubmit}>
         <input
           type="email"
           placeholder="Email"

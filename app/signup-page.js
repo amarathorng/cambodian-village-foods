@@ -44,7 +44,7 @@ const styles = {
   },
   button: {
     width: "100%",
-    padding: "12px 24px",
+    padding: "12px 10px",
     marginTop: 8,
     fontSize: 14,
     fontWeight: 600,
@@ -78,32 +78,81 @@ const styles = {
   },
 };
 
+const SIGNUP_COOLDOWN_MS = 60 * 1000;
+
+// Read any cooldown saved from a previous page load (localStorage), so a
+// reload doesn't reset the "wait before retrying sign-up" timer.
+function getStoredCooldown() {
+  try {
+    const value = Number(localStorage.getItem("signupCooldownUntil") || 0);
+    return Number.isFinite(value) ? value : 0;
+  } catch {
+    // localStorage is unavailable (e.g. server render) — no cooldown.
+    return 0;
+  }
+}
+
+function storeCooldown(timestamp) {
+  try {
+    localStorage.setItem("signupCooldownUntil", String(timestamp));
+  } catch {
+    // Ignore storage failures; the in-memory cooldown still applies.
+  }
+}
+
 export default function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [cooldownUntil, setCooldownUntil] = useState(getStoredCooldown);
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 );
-  const [error, setError] = useState("");
-  
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const now = Date.now();
+    // Block spam: ignore duplicate clicks and any submission during the
+    // post-rate-limit cooldown, so we stop hammering Supabase's API.
+    if (isLoading || now < cooldownUntil) return;
     setError("");
+    setIsLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    if (error) {
-      setError(error.message || "Invalid email or password");
-      return;
+      if (error) {
+        // A 429 is Supabase's server-side rate limit, not a code bug.
+        const isRateLimit = error.status === 429 || /too many|rate limit/i.test(error.message || "");
+        if (isRateLimit) {
+          // Block further attempts so we stop tripping the limit, and give an
+          // honest message: Supabase's rate limit resets on a long window
+          // (often ~1 hour), not after a short countdown.
+          const nextCooldown = Date.now() + SIGNUP_COOLDOWN_MS;
+          setCooldownUntil(nextCooldown);
+          storeCooldown(nextCooldown);
+          setError(
+            "Sign-up is temporarily rate-limited by Supabase. Please wait a while " +
+              "before retrying, or create users directly in the Supabase Dashboard " +
+              "(Authentication → Users)."
+          );
+        } else {
+          setError("Could not create account. Please try again.");
+        }
+        return;
+      }
+
+      // Redirect to home on successful sign up
+      window.location.href = "/";
+    } finally {
+      setIsLoading(false);
     }
-
-    // Redirect to home on successful sign up
-    window.location.href = "/";
   };
 
   return (
@@ -132,8 +181,12 @@ const supabase = createBrowserClient(
           autoComplete="password"
           required
         />
-        <button style={styles.button} type="submit">
-          Sign Up
+        <button
+          style={styles.button}
+          type="submit"
+          disabled={isLoading || Date.now() < cooldownUntil}
+        >
+          {isLoading ? "Creating account…" : "Sign Up"}
         </button>
       </form>
 

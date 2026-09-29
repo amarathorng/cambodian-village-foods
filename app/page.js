@@ -2,7 +2,6 @@
 
 import collection from "../collection.config.js";
 import { useState } from "react";
-import { useSupabase } from "@supabase/ssr";
 import EntryCard from "../components/EntryCard";
 import entries from "../data/entries.js";
 
@@ -79,6 +78,17 @@ export default function Home() {
 
   return (
     <main style={styles.wrap}>
+      <nav style={{ marginBottom: 24, display: "flex", width: "100%", justifyContent: "flex-end" }}>
+        <a href="/login" style={{ color: "#2EE6A8", textDecoration: "none", fontWeight: 600, marginRight: 5 }}>
+          Login
+        </a>
+        <a style={{ color: "#2EE6A8", textDecoration: "none", fontWeight: 600, marginRight: 5 }}>
+          /
+        </a>
+        <a href="/signup" style={{ color: "#2EE6A8", textDecoration: "none", fontWeight: 600, marginRight: 12 }}>
+          Sign Up
+        </a>
+      </nav>
       <p style={styles.kicker}>KHMER LIVING ARCHIVE</p>
       <h1 style={styles.title}>{collection.name}</h1>
       <p style={styles.description}>{collection.description}</p>
@@ -142,7 +152,7 @@ export default function Home() {
         </>
       ) : (
         <p style={{color: "#97A1B3", marginTop: 32, fontSize: 14}}>
-          {searchTerm.length > 0 ? "No entries found\nKhmer: មិនជំនួស" : ""}
+          {searchTerm.length > 0 ? "No entries found\nKhmer: ស្វែងរកមិនឃើញ" : ""}
         </p>
       )}
 
