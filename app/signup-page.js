@@ -40,7 +40,6 @@ const styles = {
     borderRadius: 6,
     backgroundColor: "#1C222C",
     color: "#FFFFFF",
-    "&:focus": { outline: "none", borderColor: "#2EE6A8", boxShadow: "0 0 0 3px rgba(46, 230, 168, 0.15)" },
   },
   button: {
     width: "100%",
@@ -53,8 +52,6 @@ const styles = {
     backgroundColor: "#2EE6A8",
     color: "#14181F",
     cursor: "pointer",
-    "&:hover": { backgroundColor: "#1ABB9C" },
-    "&:active": { backgroundColor: "#14181F", color: "#FFFFFF" },
   },
   error: {
     marginTop: 16,
@@ -169,6 +166,7 @@ const supabase = createBrowserClient(
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           style={styles.input}
+          className="auth-input"
           autoComplete="email"
           required
         />
@@ -178,11 +176,13 @@ const supabase = createBrowserClient(
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           style={styles.input}
+          className="auth-input"
           autoComplete="password"
           required
         />
         <button
           style={styles.button}
+          className="auth-button"
           type="submit"
           disabled={isLoading || Date.now() < cooldownUntil}
         >

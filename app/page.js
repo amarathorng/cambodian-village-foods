@@ -1,9 +1,8 @@
 "use client";
 
 import collection from "../collection.config.js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import EntryCard from "../components/EntryCard";
-import entries from "../data/entries.js";
 
 const styles = {
   wrap: {
@@ -61,35 +60,126 @@ const styles = {
   },
 };
 
+// UI text for each language. The food titles/descriptions come from the
+// database; these are the interface labels only.
+const t = {
+  en: {
+    login: "Login",
+    signUp: "Sign Up",
+    searchPlaceholder: "Search foods…",
+    loading: "Loading archive…",
+    error: "Could not load entries.",
+    empty: "No entries in the archive yet.",
+    noResults: "No entries found",
+    count: "entries in the archive",
+    kicker: "KHMER LIVING ARCHIVE",
+    curatedBy: "CURATED BY",
+    source: "SOURCE",
+    clear: "Clear search",
+    footer:
+      "Built in ICT 340 — Vibe Coding, American University of Phnom Penh, Fall 2026. This archive is under construction all semester. Come back in December.",
+  },
+  kh: {
+    login: "ចូល",
+    signUp: "ចុះឈ្មោះ",
+    searchPlaceholder: "ស្វែងរកអាហារ…",
+    loading: "កំពុងផ្ទុក…",
+    error: "មិនអាចផ្ទុកធាតុបានទេ។",
+    empty: "មិនទាន់មានធាតុនៅក្នុងបណ្ណសារទេ។",
+    noResults: "រកមិនឃើញធាតុ",
+    count: "ធាតុនៅក្នុងបណ្ណសារ",
+    kicker: "បណ្ណសារជីវិតខ្មែរ",
+    curatedBy: "រៀបចំដោយ",
+    source: "ប្រភព",
+    clear: "សម្អាតការស្វែងរក",
+    footer:
+      "សាងសង់ក្នុង ICT 340 — Vibe Coding, សាកលវិទ្យាល័យអាមេរិកភ្នំពេញ។ បណ្ណសារនេះកំពុងសាងសង់ពេញមួយឆមាស។",
+  },
+};
+
 export default function Home() {
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [language, setLanguage] = useState("en");
+  const tUI = t[language];
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadEntries() {
+      try {
+        const res = await fetch("/api/entries");
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Could not load entries.");
+        if (active) setEntries(json.entries);
+      } catch (err) {
+        if (active) setError(err.message);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadEntries();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredEntries = entries.filter((entry) => {
     const term = searchTerm.trim();
     if (!term) return true;
+
+    // Khmer mode searches the Khmer title; English mode searches the English
+    // title and description.
+    if (language === "kh") {
+      const khTitle = entry.khmerTitle || "";
+      return khTitle.includes(term);
+    }
+
     const lowerTerm = term.toLowerCase();
     const lowerTitle = entry.title.toLowerCase();
     const lowerDesc = entry.description.toLowerCase();
-    const khmerTitle = entry.khmerTitle;
-    const matchesEnglish = lowerTitle.includes(lowerTerm) || lowerDesc.includes(lowerTerm);
-    const matchesKhmer = khmerTitle.includes(term);
-    return matchesEnglish || matchesKhmer;
+    return lowerTitle.includes(lowerTerm) || lowerDesc.includes(lowerTerm);
   });
 
   return (
     <main style={styles.wrap}>
-      <nav style={{ marginBottom: 24, display: "flex", width: "100%", justifyContent: "flex-end" }}>
+      <nav style={{ marginBottom: 24, display: "flex", width: "100%", justifyContent: "flex-end", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 6, marginRight: "auto" }}>
+          {["en", "kh"].map((code) => (
+            <button
+              key={code}
+              onClick={() => setLanguage(code)}
+              aria-pressed={language === code}
+              style={{
+                background: "none",
+                border: `1px solid ${language === code ? "#2EE6A8" : "#2E3644"}`,
+                color: language === code ? "#2EE6A8" : "#97A1B3",
+                borderRadius: 6,
+                padding: "4px 10px",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              {code === "en" ? "English" : "ខ្មែរ"}
+            </button>
+          ))}
+        </div>
         <a href="/login" style={{ color: "#2EE6A8", textDecoration: "none", fontWeight: 600, marginRight: 5 }}>
-          Login
+          {tUI.login}
         </a>
         <a style={{ color: "#2EE6A8", textDecoration: "none", fontWeight: 600, marginRight: 5 }}>
           /
         </a>
         <a href="/signup" style={{ color: "#2EE6A8", textDecoration: "none", fontWeight: 600, marginRight: 12 }}>
-          Sign Up
+          {tUI.signUp}
         </a>
       </nav>
-      <p style={styles.kicker}>KHMER LIVING ARCHIVE</p>
+      <p style={styles.kicker}>{tUI.kicker}</p>
       <h1 style={styles.title}>{collection.name}</h1>
       <p style={styles.description}>{collection.description}</p>
 
@@ -98,7 +188,8 @@ export default function Home() {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search foods…"
+          placeholder={tUI.searchPlaceholder}
+          className="search-input"
           style={{
             padding: "8px 16px 8px 34px",
             fontSize: 14,
@@ -106,13 +197,13 @@ export default function Home() {
             borderRadius: 6,
             backgroundColor: "#1C222C",
             color: "#FFFFFF",
-            "&:focus": {outline: "none", borderColor: "#2EE6A8", boxShadow: "0 0 0 3px rgba(46, 230, 168, 0.15)"},
           }}
         />
 
           {/* Clear button */}
           {searchTerm.trim().length > 0 && (
             <button
+              className="search-clear"
               style={{
                 position: "absolute",
                 right: 12,
@@ -126,10 +217,9 @@ export default function Home() {
                 cursor: "pointer",
                 fontSize: 12,
                 lineHeight: 1,
-                "&:hover": {color: "#FFFFFF"}
               }}
               onClick={() => setSearchTerm("")}
-              aria-label="Clear search"
+              aria-label={tUI.clear}
             >
               ×
             </button>
@@ -137,31 +227,41 @@ export default function Home() {
         </div>
 
       <div style={styles.card}>
-        <p style={styles.cardLabel}>CURATED BY</p>
+        <p style={styles.cardLabel}>{tUI.curatedBy}</p>
         <p style={styles.cardValue}>{collection.curator}</p>
       </div>
       <div style={styles.card}>
-        <p style={styles.cardLabel}>SOURCE</p>
+        <p style={styles.cardLabel}>{tUI.source}</p>
         <p style={styles.cardValue}>{collection.source}</p>
       </div>
 
-      {filteredEntries.length > 0 ? (
+      {loading ? (
+        <p style={{ color: "#97A1B3", marginTop: 32, fontSize: 14 }}>
+          {tUI.loading}
+        </p>
+      ) : error ? (
+        <p style={{ color: "#E078A8", marginTop: 32, fontSize: 14 }}>
+          {tUI.error}
+        </p>
+      ) : entries.length === 0 ? (
+        <p style={{ color: "#97A1B3", marginTop: 32, fontSize: 14 }}>
+          {tUI.empty}
+        </p>
+      ) : filteredEntries.length > 0 ? (
         <>
-          {filteredEntries.map((entry) => <EntryCard key={entry.id} entry={entry} />)}
-          <p style={styles.count}>entries in the archive: {filteredEntries.length}</p>
+          {filteredEntries.map((entry) => <EntryCard key={entry.id} entry={entry} language={language} />)}
+          <p style={styles.count}>{tUI.count}: {filteredEntries.length}</p>
         </>
       ) : (
         <p style={{color: "#97A1B3", marginTop: 32, fontSize: 14}}>
-          {searchTerm.length > 0 ? "No entries found\nKhmer: ស្វែងរកមិនឃើញ" : ""}
+          {tUI.noResults}
         </p>
       )}
 
       
 
       <footer style={styles.footer}>
-        Built in ICT 340 — Vibe Coding, American University of Phnom Penh, Fall
-        2026. This archive is under construction all semester. Come back in
-        December.
+        {tUI.footer}
       </footer>
     </main>
   );

@@ -7,7 +7,7 @@ const entries = [
       "My mother usually cooks Prahok for our family when all her children come back to our hometown after working or studying in other cities. She prepares this food about once a month, especially when the family can gather together. She gets the raw Prahok from my auntie and mixes it with pork and lemongrass. She carefully chops and mixes the ingredients together until they are well combined. Then she wraps the mixture in banana leaves, with each package containing enough for about two people. She then grills the packages carefully until they are fully cooked. We usually eat it for Sunday lunch with fresh vegetables such as cucumber, morning glory, winged bean, carrot, and cabbage.",
     contributor: "My Mother",
     place: "Kandieng District, Pursat Province, Cambodia",
-    image: "prahok-ang.jpeg",
+    image: "https://drive.google.com/file/d/1Lal22vM4Qw1pqn8VHh71Hrgxrnv7JC7N/view",
   },
   
   {
