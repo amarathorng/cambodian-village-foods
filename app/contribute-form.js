@@ -10,13 +10,8 @@ import { useEffect, useMemo, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import { colors } from "../components/theme.js";
-
-const TITLE_MAX = 120; // English and Khmer titles
-const PLACE_MAX = 200; // village / place
-const DESC_MIN = 30; // a story needs substance
-const DESC_MAX = 3000;
-const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+import EntryFields from "../components/EntryFields.js";
+import { validate } from "../components/entryValidation.js";
 
 const wrapStyle = {
   maxWidth: 640,
@@ -25,33 +20,6 @@ const wrapStyle = {
   display: "flex",
   flexDirection: "column",
 };
-
-// Mirror the server rules so the user sees a message before ever hitting the API.
-function validate(values, photo) {
-  const e = {};
-  const te = values.title_english.trim();
-  const tk = values.title_khmer.trim();
-  const desc = values.description_english.trim();
-  const contributor = values.contributor.trim();
-  const place = values.place.trim();
-
-  if (!te) e.title_english = "Please enter a title.";
-  else if (te.length > TITLE_MAX) e.title_english = `Keep the title under ${TITLE_MAX} characters.`;
-  if (!tk) e.title_khmer = "Please enter the Khmer title.";
-  else if (tk.length > TITLE_MAX) e.title_khmer = `Keep the Khmer title under ${TITLE_MAX} characters.`;
-  if (!desc) e.description_english = "Please tell the story.";
-  else if (desc.length < DESC_MIN) e.description_english = `Please write at least ${DESC_MIN} characters.`;
-  else if (desc.length > DESC_MAX) e.description_english = `Please keep the story under ${DESC_MAX} characters.`;
-  if (contributor.length > TITLE_MAX) e.contributor = `Keep the name under ${TITLE_MAX} characters.`;
-  if (!place) e.place = "Please enter the village or place.";
-  else if (place.length > PLACE_MAX) e.place = `Keep the place under ${PLACE_MAX} characters.`;
-
-  if (!photo || !photo.size) e.photo = "Please choose a photo.";
-  else if (photo.size > MAX_FILE_BYTES) e.photo = "The photo must be 5 MB or smaller.";
-  else if (!ALLOWED_TYPES.includes(photo.type)) e.photo = "The photo must be a JPG, PNG, WEBP, or GIF image.";
-
-  return e;
-}
 
 export default function ContributeForm() {
   // Session state: "loading" -> checking, "out" -> signed out, "in" -> signed in.
@@ -178,47 +146,13 @@ export default function ContributeForm() {
 
       <form onSubmit={handleSubmit} aria-busy={submitting ? "true" : "false"} noValidate>
         <fieldset disabled={submitting} style={{ border: "none", margin: 0, padding: 0 }}>
-          <label className="auth-field" htmlFor="title_english">
-            <span className="auth-label">Title (English)</span>
-            <input id="title_english" className="auth-input" type="text" value={values.title_english} onChange={setField("title_english")} maxLength={TITLE_MAX} />
-            {errors.title_english && <p className="field-error" role="alert">{errors.title_english}</p>}
-          </label>
-
-          <label className="auth-field" htmlFor="title_khmer">
-            <span className="auth-label">Title (Khmer / ចំណងជើងជាភាសាខ្មែរ)</span>
-            <input id="title_khmer" className="auth-input" type="text" value={values.title_khmer} onChange={setField("title_khmer")} maxLength={TITLE_MAX} />
-            {errors.title_khmer && <p className="field-error" role="alert">{errors.title_khmer}</p>}
-          </label>
-
-          <label className="auth-field" htmlFor="description_english">
-            <span className="auth-label">The story</span>
-            <textarea id="description_english" className="auth-input" value={values.description_english} onChange={setField("description_english")} maxLength={DESC_MAX} placeholder="Who made it, when, and why is it special to your family?" />
-            {errors.description_english && <p className="field-error" role="alert">{errors.description_english}</p>}
-          </label>
-
-          <label className="auth-field" htmlFor="contributor">
-            <span className="auth-label">Contributor (who shared the story)</span>
-            <input id="contributor" className="auth-input" type="text" value={values.contributor} onChange={setField("contributor")} maxLength={TITLE_MAX} />
-            {errors.contributor && <p className="field-error" role="alert">{errors.contributor}</p>}
-          </label>
-
-          <label className="auth-field" htmlFor="place">
-            <span className="auth-label">Village / Place</span>
-            <input id="place" className="auth-input" type="text" value={values.place} onChange={setField("place")} maxLength={PLACE_MAX} />
-            {errors.place && <p className="field-error" role="alert">{errors.place}</p>}
-          </label>
-
-          <label className="auth-field" htmlFor="photo">
-            <span className="auth-label">Photo (required)</span>
-            <input
-              id="photo"
-              className="auth-input"
-              type="file"
-              accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
-              onChange={handlePhoto}
-            />
-            {errors.photo && <p className="field-error" role="alert">{errors.photo}</p>}
-          </label>
+          <EntryFields
+            values={values}
+            errors={errors}
+            setField={setField}
+            handlePhoto={handlePhoto}
+            photoNote="Photo (required)"
+          />
         </fieldset>
 
         <button type="submit" className="auth-button" disabled={submitting}>

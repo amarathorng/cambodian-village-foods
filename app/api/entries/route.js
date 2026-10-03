@@ -9,6 +9,7 @@ import { NextResponse } from "next/server";
 function toEntry(row) {
   return {
     id: row.id,
+    owner: row.owner,
     title: row.title_english,
     khmerTitle: row.title_khmer,
     description: row.description_english,
