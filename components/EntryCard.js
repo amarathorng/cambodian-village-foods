@@ -65,7 +65,7 @@ const EntryCard = ({ entry, language = "en" }) => {
 
   const imageStyle = {
     width: "100%",
-    height: 380,
+    height: "70%",
     backgroundColor: "#2E3644",
     borderRadius: 8,
     marginBottom: 16,

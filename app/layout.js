@@ -6,16 +6,28 @@ export const metadata = {
   description: collection.description,
 };
 
+const fontLinks = (
+  <>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Khmer&display=swap"
+      rel="stylesheet"
+    />
+  </>
+);
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>{fontLinks}</head>
       <body
         style={{
           margin: 0,
-          backgroundColor: "#14181F",
-          color: "#E8EDF2",
+          backgroundColor: "#111513",
+          color: "#F2EADB",
           fontFamily:
-            "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            "'Inter', 'Noto Sans Khmer', ui-sans-serif, system-ui, 'Segoe UI', sans-serif",
           minHeight: "100vh",
         }}
       >

@@ -2,108 +2,60 @@
 
 import collection from "../collection.config.js";
 import { useEffect, useState } from "react";
-import EntryCard from "../components/EntryCard";
+import { colors, fonts, toKhmerNumber } from "../components/theme.js";
+import Navbar from "../components/Navbar.js";
+import HeroSection from "../components/HeroSection.js";
+import ArchiveIntroduction from "../components/ArchiveIntroduction.js";
+import FoodSearch from "../components/FoodSearch.js";
+import FoodFilters from "../components/FoodFilters.js";
+import FoodGrid from "../components/FoodGrid.js";
+import CuratorSection from "../components/CuratorSection.js";
+import ArchiveStatement from "../components/ArchiveStatement.js";
+import Footer from "../components/Footer.js";
 
-const styles = {
-  wrap: {
-    maxWidth: 720,
-    margin: "0 auto",
-    padding: "80px 24px",
-  },
-  kicker: {
-    fontFamily: "'Courier New', monospace",
-    color: "#2EE6A8",
-    fontSize: 14,
-    letterSpacing: 1,
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: 700,
-    margin: "16px 0 12px",
-    lineHeight: 1.1,
-  },
-  description: {
-    fontSize: 18,
-    color: "#97A1B3",
-    lineHeight: 1.6,
-    margin: 0,
-  },
-  card: {
-    marginTop: 48,
-    padding: 24,
-    backgroundColor: "#1C222C",
-    border: "1px solid #2E3644",
-    borderRadius: 10,
-  },
-  cardLabel: {
-    fontFamily: "'Courier New', monospace",
-    fontSize: 12,
-    color: "#97A1B3",
-    margin: 0,
-  },
-  cardValue: {
-    fontSize: 16,
-    margin: "6px 0 0",
-  },
-  count: {
-    fontFamily: "'Courier New', monospace",
-    fontSize: 14,
-    color: "#2EE6A8",
-    marginTop: 48,
-  },
-  footer: {
-    marginTop: 64,
-    paddingTop: 24,
-    borderTop: "1px solid #2E3644",
-    fontSize: 13,
-    color: "#5A6373",
-  },
-};
-
-// UI text for each language. The food titles/descriptions come from the
-// database; these are the interface labels only.
+// UI text per language. Food titles/descriptions come from the database; these
+// are interface labels only, and only where the project has a verified Khmer
+// translation.
 const t = {
   en: {
-    login: "Login",
-    signUp: "Sign Up",
-    searchPlaceholder: "Search foods…",
     loading: "Loading archive…",
     error: "Could not load entries.",
     empty: "No entries in the archive yet.",
-    noResults: "No entries found",
-    count: "entries in the archive",
-    kicker: "KHMER LIVING ARCHIVE",
-    curatedBy: "CURATED BY",
-    source: "SOURCE",
-    clear: "Clear search",
-    footer:
-      "Built in ICT 340 — Vibe Coding, American University of Phnom Penh, Fall 2026. This archive is under construction all semester. Come back in December.",
+    noResults: "No foods found. Try another search.",
+    resultCount: "Showing",
+    ofFoods: "of",
+    foods: "foods",
+    reset: "Reset search",
+    collectionLabel: "The Village Food Collection",
+    collectionKhmer: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
+    collectionMeta: (n) => `${String(n).padStart(2, "0")} FOODS`,
+    collectionMetaKh: (n) => `${toKhmerNumber(String(n).padStart(2, "0"))} មុខម្ហូប`,
+    collectionSupport: "Explore traditional foods connected to Cambodian villages, families, and communities.",
   },
   kh: {
-    login: "ចូល",
-    signUp: "ចុះឈ្មោះ",
-    searchPlaceholder: "ស្វែងរកអាហារ…",
     loading: "កំពុងផ្ទុក…",
     error: "មិនអាចផ្ទុកធាតុបានទេ។",
     empty: "មិនទាន់មានធាតុនៅក្នុងបណ្ណសារទេ។",
     noResults: "រកមិនឃើញធាតុ",
-    count: "ធាតុនៅក្នុងបណ្ណសារ",
-    kicker: "បណ្ណសារជីវិតខ្មែរ",
-    curatedBy: "រៀបចំដោយ",
-    source: "ប្រភព",
-    clear: "សម្អាតការស្វែងរក",
-    footer:
-      "សាងសង់ក្នុង ICT 340 — Vibe Coding, សាកលវិទ្យាល័យអាមេរិកភ្នំពេញ។ បណ្ណសារនេះកំពុងសាងសង់ពេញមួយឆមាស។",
+    resultCount: "Showing",
+    ofFoods: "of",
+    foods: "foods",
+    reset: "សម្អាតការស្វែងរក",
+    collectionLabel: "The Village Food Collection",
+    collectionKhmer: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
+    collectionMeta: (n) => `${String(n).padStart(2, "0")} FOODS`,
+    collectionMetaKh: (n) => `${toKhmerNumber(String(n).padStart(2, "0"))} មុខម្ហូប`,
+    collectionSupport: "Explore traditional foods connected to Cambodian villages, families, and communities.",
   },
 };
-
 export default function Home() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterPlace, setFilterPlace] = useState("");
   const [language, setLanguage] = useState("en");
-  const tUI = t[language];
+  const tUI = t[language] || t.en;
 
   useEffect(() => {
     let active = true;
@@ -128,141 +80,108 @@ export default function Home() {
     };
   }, []);
 
+  // Search across the fields that actually exist.
   const filteredEntries = entries.filter((entry) => {
-    const term = searchTerm.trim();
-    if (!term) return true;
-
-    // Khmer mode searches the Khmer title; English mode searches the English
-    // title and description.
-    if (language === "kh") {
-      const khTitle = entry.khmerTitle || "";
-      return khTitle.includes(term);
-    }
-
-    const lowerTerm = term.toLowerCase();
-    const lowerTitle = entry.title.toLowerCase();
-    const lowerDesc = entry.description.toLowerCase();
-    return lowerTitle.includes(lowerTerm) || lowerDesc.includes(lowerTerm);
+    const term = searchTerm.trim().toLowerCase();
+    const haystack = [
+      entry.title,
+      entry.khmerTitle,
+      entry.description,
+      entry.contributor,
+      entry.place,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    const matchesSearch = !term || haystack.includes(term);
+    const matchesPlace = !filterPlace || entry.place === filterPlace;
+    return matchesSearch && matchesPlace;
   });
 
+  // Distinct locations derived only from real records.
+  const locationSet = [];
+  entries.forEach((e) => {
+    if (e.place && !locationSet.some((l) => l.value === e.place)) {
+      locationSet.push({ value: e.place, label: e.place.split(",")[0].trim() });
+    }
+  });
+
+  const contentMax = { maxWidth: 1180, margin: "0 auto" };
+
   return (
-    <main style={styles.wrap}>
-      <nav style={{ marginBottom: 24, display: "flex", width: "100%", justifyContent: "flex-end", alignItems: "center" }}>
-        <div style={{ display: "flex", gap: 6, marginRight: "auto" }}>
-          {["en", "kh"].map((code) => (
-            <button
-              key={code}
-              onClick={() => setLanguage(code)}
-              aria-pressed={language === code}
-              style={{
-                background: "none",
-                border: `1px solid ${language === code ? "#2EE6A8" : "#2E3644"}`,
-                color: language === code ? "#2EE6A8" : "#97A1B3",
-                borderRadius: 6,
-                padding: "4px 10px",
-                fontSize: 13,
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              {code === "en" ? "English" : "ខ្មែរ"}
-            </button>
-          ))}
+    <main style={{ backgroundColor: colors.bg, color: colors.text }}>
+      <Navbar language={language} setLanguage={setLanguage} container={contentMax} />
+      <div style={contentMax}>
+        <HeroSection language={language} heroImage="/images/hero-prahok-ang.jpeg" />
+        <ArchiveIntroduction language={language} />
+      </div>
+
+      <div
+        id="collection"
+        className="collection-section"
+        style={{ ...contentMax, paddingTop: 24 }}
+      >
+        <span className="section-label" style={{ fontFamily: fonts.stack, fontSize: 12, letterSpacing: "0.16em", color: colors.muted }}>
+          {tUI.collectionKhmer}
+        </span>
+        <h2 style={{ margin: "14px 0 6px", fontFamily: fonts.stack, fontSize: 34, fontWeight: 700, color: colors.text }}>
+          {tUI.collectionLabel}
+        </h2>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 8 }}>
+          <span className="collection-meta" style={{ fontFamily: fonts.stack, fontSize: 13, letterSpacing: "0.1em", color: colors.green2 }}>
+            {tUI.collectionMeta(entries.length)}
+          </span>
+          <span aria-hidden="true" style={{ color: colors.border }}>/</span>
+          <span className="collection-meta" style={{ fontFamily: fonts.khmer, fontSize: 13, letterSpacing: "0.05em", color: colors.text2 }}>
+            {tUI.collectionMetaKh(entries.length)}
+          </span>
         </div>
-        <a href="/login" style={{ color: "#2EE6A8", textDecoration: "none", fontWeight: 600, marginRight: 5 }}>
-          {tUI.login}
-        </a>
-        <a style={{ color: "#2EE6A8", textDecoration: "none", fontWeight: 600, marginRight: 5 }}>
-          /
-        </a>
-        <a href="/signup" style={{ color: "#2EE6A8", textDecoration: "none", fontWeight: 600, marginRight: 12 }}>
-          {tUI.signUp}
-        </a>
-      </nav>
-      <p style={styles.kicker}>{tUI.kicker}</p>
-      <h1 style={styles.title}>{collection.name}</h1>
-      <p style={styles.description}>{collection.description}</p>
+        <p style={{ margin: "12px 0 26px", maxWidth: "60ch", fontFamily: fonts.stack, fontSize: 16, lineHeight: 1.6, color: colors.text2 }}>
+          {tUI.collectionSupport}
+        </p>
 
-      <div style={{marginBottom: 32, marginTop: 16}}>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder={tUI.searchPlaceholder}
-          className="search-input"
-          style={{
-            padding: "8px 16px 8px 34px",
-            fontSize: 14,
-            border: "1px solid #2E3644",
-            borderRadius: 6,
-            backgroundColor: "#1C222C",
-            color: "#FFFFFF",
-          }}
-        />
+        <div style={{ display: "flex", flexDirection: "column", gap: 18, marginBottom: 12 }}>
+          <FoodSearch language={language} value={searchTerm} onChange={setSearchTerm} onClear={() => setSearchTerm("")} />
+          <FoodFilters language={language} locations={locationSet} active={filterPlace} onChange={setFilterPlace} />
+        </div>
 
-          {/* Clear button */}
-          {searchTerm.trim().length > 0 && (
+        {loading ? (
+          <p className="status" style={{ color: colors.text2, fontSize: 15 }}>{tUI.loading}</p>
+        ) : error ? (
+          <p className="status" style={{ color: colors.danger, fontSize: 15 }}>{tUI.error}</p>
+        ) : entries.length === 0 ? (
+          <p className="status" style={{ color: colors.text2, fontSize: 15 }}>{tUI.empty}</p>
+        ) : filteredEntries.length === 0 ? (
+          <div className="empty-state" style={{ textAlign: "center", padding: "48px 24px", border: "1px dashed " + colors.border, borderRadius: 14, backgroundColor: colors.bg2 }}>
+            <p style={{ color: colors.text, fontFamily: fonts.stack, fontSize: 18, fontWeight: 600, margin: 0 }}>{tUI.noResults}</p>
             <button
+              type="button"
               className="search-clear"
-              style={{
-                position: "absolute",
-                right: 12,
-                top: 12,
-                width: 20,
-                height: 20,
-                background: "none",
-                border: "none",
-                color: "#6B7280",
-                padding: 0,
-                cursor: "pointer",
-                fontSize: 12,
-                lineHeight: 1,
+              onClick={() => {
+                setSearchTerm("");
+                setFilterPlace("");
               }}
-              onClick={() => setSearchTerm("")}
-              aria-label={tUI.clear}
+              style={{ marginTop: 14, fontFamily: fonts.stack, fontSize: 14, color: colors.green2, background: "none", border: "1px solid " + colors.border, borderRadius: 8, padding: "8px 16px", cursor: "pointer" }}
             >
-              ×
+              {tUI.reset}
             </button>
-          )}
-        </div>
-
-      <div style={styles.card}>
-        <p style={styles.cardLabel}>{tUI.curatedBy}</p>
-        <p style={styles.cardValue}>{collection.curator}</p>
+          </div>
+        ) : (
+          <>
+            <p className="status" role="status" style={{ color: colors.muted, fontSize: 14.5 }}>
+              {tUI.resultCount} {filteredEntries.length} {tUI.ofFoods} {entries.length} {tUI.foods}
+            </p>
+            <FoodGrid entries={entries} visible={filteredEntries} language={language} />
+          </>
+        )}
       </div>
-      <div style={styles.card}>
-        <p style={styles.cardLabel}>{tUI.source}</p>
-        <p style={styles.cardValue}>{collection.source}</p>
+
+      <div id="about-info" style={{ ...contentMax, paddingTop: 40 }}>
+        <CuratorSection language={language} curator={collection.curator} />
+        <ArchiveStatement language={language} source={collection.source} />
       </div>
 
-      {loading ? (
-        <p style={{ color: "#97A1B3", marginTop: 32, fontSize: 14 }}>
-          {tUI.loading}
-        </p>
-      ) : error ? (
-        <p style={{ color: "#E078A8", marginTop: 32, fontSize: 14 }}>
-          {tUI.error}
-        </p>
-      ) : entries.length === 0 ? (
-        <p style={{ color: "#97A1B3", marginTop: 32, fontSize: 14 }}>
-          {tUI.empty}
-        </p>
-      ) : filteredEntries.length > 0 ? (
-        <>
-          {filteredEntries.map((entry) => <EntryCard key={entry.id} entry={entry} language={language} />)}
-          <p style={styles.count}>{tUI.count}: {filteredEntries.length}</p>
-        </>
-      ) : (
-        <p style={{color: "#97A1B3", marginTop: 32, fontSize: 14}}>
-          {tUI.noResults}
-        </p>
-      )}
-
-      
-
-      <footer style={styles.footer}>
-        {tUI.footer}
-      </footer>
+      <Footer language={language} copyright="© 2026 Khmer Living Archive" />
     </main>
   );
 }
