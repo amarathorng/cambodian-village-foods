@@ -103,7 +103,7 @@ export default function HeroSection({ language, heroImage }) {
               src={heroImage}
               alt={tUI.imageAlt}
               width={1280}
-              height={340}
+              height={450}
               fetchPriority="high"
             />
           </div>

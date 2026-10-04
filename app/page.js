@@ -112,7 +112,7 @@ export default function Home() {
     <main style={{ backgroundColor: colors.bg, color: colors.text }}>
       <Navbar language={language} setLanguage={setLanguage} container={contentMax} />
       <div style={contentMax}>
-        <HeroSection language={language} heroImage="/images/hero-prahok-ang.jpeg" />
+        <HeroSection language={language} heroImage="/images/Num-Banh-Chok-Khmer.jpg" />
         <ArchiveIntroduction language={language} />
       </div>
 
