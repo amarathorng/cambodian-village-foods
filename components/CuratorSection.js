@@ -14,7 +14,7 @@ const t = {
     label: "ABOUT THE ARCHIVE",
     heading: "About the Archive",
     body: "Khmer Living Archive is a digital collection documenting traditional foods connected to Cambodian villages and communities, preserving the stories and knowledge shared by the people who prepare and remember them.",
-    curatedBy: "រៀបចំដោយ",
+    curatedBy: "រៀបរៀងដោយ",
   },
 };
 

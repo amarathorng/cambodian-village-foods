@@ -16,11 +16,12 @@ import LanguageSwitcher from "./LanguageSwitcher.js";
 // in the project (foods, login, sign up, logout). "Stories", "About" keep English
 // in Khmer mode rather than risk displaying incorrect Khmer text.
 const t = {
-  en: { foods: "Foods", stories: "Stories", about: "About", login: "Login", signUp: "Sign Up", logout: "Logout", menu: "Menu" },
+  en: { foods: "Foods", stories: "Stories", about: "About", review: "Review queue", login: "Login", signUp: "Sign Up", logout: "Logout", menu: "Menu" },
   kh: {
     foods: "អាហារ",
     stories: "Stories",
     about: "About",
+    review: "Review queue",
     login: "ចូល",
     signUp: "ចុះឈ្មោះ",
     logout: "Logout",
@@ -52,6 +53,7 @@ export default function Navbar({ language, setLanguage, container = {} }) {
   // user is undefined while the session is still resolving, null when signed out,
   // and the Supabase user object when signed in.
   const [user, setUser] = useState(undefined);
+  const [isReviewer, setIsReviewer] = useState(false);
   const supabase = useMemo(
     () =>
       createBrowserClient(
@@ -64,15 +66,24 @@ export default function Navbar({ language, setLanguage, container = {} }) {
 
   useEffect(() => {
     let active = true;
-    // Keep the header in sync with sign-in / sign-out events in real time.
+
+    // Keep the header, and the reviewer-only link, in sync with auth changes.
+    const syncUser = async (nextUser) => {
+      if (!active) return;
+      setUser(nextUser);
+      if (!nextUser) {
+        setIsReviewer(false);
+        return;
+      }
+      const { data } = await supabase.rpc("is_reviewer");
+      if (active) setIsReviewer(data === true);
+    };
+
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!active) return;
-      setUser(session ? session.user : null);
+      syncUser(session ? session.user : null);
     });
-    supabase.auth.getUser().then(({ data }) => {
-      if (!active) return;
-      setUser(data.user || null);
-    });
+    supabase.auth.getUser().then(({ data }) => syncUser(data.user || null));
+
     return () => {
       active = false;
       authListener?.subscription.unsubscribe();
@@ -108,6 +119,7 @@ export default function Navbar({ language, setLanguage, container = {} }) {
     { label: tUI.foods, href: "#collection" },
     { label: tUI.stories, href: "#introduction" },
     { label: tUI.about, href: "#about" },
+    ...(isReviewer ? [{ label: tUI.review, href: "/review" }] : []),
   ];
 
   return (

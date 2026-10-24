@@ -14,6 +14,7 @@ import { colors, fonts } from "../../../components/theme.js";
 import Navbar from "../../../components/Navbar.js";
 import Footer from "../../../components/Footer.js";
 import FoodArticle from "./FoodArticle.js";
+import StatusBadge from "../../../components/StatusBadge.js";
 
 const t = {
   en: {
@@ -25,6 +26,8 @@ const t = {
     delete: "Delete",
     deleteConfirm: "Delete this entry? This cannot be undone.",
     notSaved: "That change wasn't saved",
+    pendingNotice: "This entry is awaiting review and is not yet visible in the public archive.",
+    rejectedNotice: "This entry was not published. Edit it to submit it for review again.",
   },
   kh: {
     back: "Back to the collection",
@@ -35,11 +38,13 @@ const t = {
     delete: "Delete",
     deleteConfirm: "Delete this entry? This cannot be undone.",
     notSaved: "That change wasn't saved",
+    pendingNotice: "This entry is awaiting review and is not yet visible in the public archive.",
+    rejectedNotice: "This entry was not published. Edit it to submit it for review again.",
   },
 };
 
 export default function FoodDetail({ id }) {
-  const [state, setState] = useState({ status: "loading", entries: [] });
+  const [state, setState] = useState({ status: "loading", entry: null, entries: [] });
   const [language, setLanguage] = useState("en");
   const [user, setUser] = useState(undefined); // undefined checking, null signed out
   const [actionMsg, setActionMsg] = useState("");
@@ -67,25 +72,51 @@ export default function FoodDetail({ id }) {
 
   useEffect(() => {
     let active = true;
+
     async function load() {
       try {
-        const res = await fetch("/api/entries");
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || "Could not load.");
-        if (active) setState({ status: "ready", entries: json.entries });
+        const [entryRes, listRes] = await Promise.all([
+          fetch(`/api/entries/${id}`),
+          fetch("/api/entries"),
+        ]);
+        const entryJson = await entryRes.json().catch(() => ({}));
+
+        if (!entryRes.ok) {
+          if (!active) return;
+          setState({
+            status: entryRes.status === 404 ? "notfound" : "error",
+            entry: null,
+            entries: [],
+          });
+          return;
+        }
+
+        const listJson = listRes.ok
+          ? await listRes.json().catch(() => ({ entries: [] }))
+          : { entries: [] };
+
+        if (active) {
+          setState({
+            status: "ready",
+            entry: entryJson.entry,
+            entries: listJson.entries || [],
+          });
+        }
       } catch {
-        if (active) setState({ status: "error", entries: [] });
+        if (active) setState({ status: "error", entry: null, entries: [] });
       }
     }
+
     load();
     return () => {
       active = false;
     };
-  }, []);
+  }, [id]);
 
-  const entries = state.entries;
-  const index = entries.findIndex((e) => String(e.id) === String(id));
-  const entry = index >= 0 ? entries[index] : null;
+  const { entries, entry } = state;
+  const index = entry
+    ? entries.findIndex((item) => String(item.id) === String(id))
+    : -1;
   const isOwner = !!entry && !!user && String(entry.owner) === String(user.id);
   const contentMax = { maxWidth: 840, margin: "0 auto" };
 
@@ -127,12 +158,21 @@ export default function FoodDetail({ id }) {
           <a href="/#collection" className="back-link" style={{ fontFamily: fonts.stack, fontSize: 14, color: colors.green2, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}>
             <span aria-hidden="true">←</span> {tUI.back}
           </a>
-          {entry && (
+          {entry && index >= 0 && (
             <span className="archive-number" style={{ fontFamily: fonts.stack, fontSize: 13, letterSpacing: "0.1em", color: colors.muted }}>
               {String(index + 1).padStart(2, "0")} / {String(entries.length).padStart(2, "0")}
             </span>
           )}
         </nav>
+
+        {entry && entry.status !== "published" && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
+            <StatusBadge status={entry.status} />
+            <span style={{ fontFamily: fonts.stack, fontSize: 14, color: colors.text2 }}>
+              {entry.status === "rejected" ? tUI.rejectedNotice : tUI.pendingNotice}
+            </span>
+          </div>
+        )}
 
         {isOwner && (
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginTop: 20 }}>

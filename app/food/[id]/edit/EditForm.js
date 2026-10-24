@@ -10,10 +10,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
-import { colors } from "../../../../components/theme.js";
+import { colors, fonts } from "../../../../components/theme.js";
 import Navbar from "../../../../components/Navbar.js";
 import Footer from "../../../../components/Footer.js";
 import EntryFields from "../../../../components/EntryFields.js";
+import StatusBadge from "../../../../components/StatusBadge.js";
 import { validate } from "../../../../components/entryValidation.js";
 
 const wrapStyle = {
@@ -60,10 +61,10 @@ export default function EditForm({ id }) {
     let active = true;
     async function load() {
       try {
-        const res = await fetch("/api/entries");
+        const res = await fetch(`/api/entries/${id}`);
         const json = await res.json();
         if (!res.ok) throw new Error(json.error || "Could not load.");
-        const found = (json.entries || []).find((e) => String(e.id) === String(id));
+        const found = json.entry;
         if (!found) {
           if (active) setLoadStatus("notfound");
           return;
@@ -140,6 +141,8 @@ export default function EditForm({ id }) {
         contributor: values.contributor.trim() || null,
         place: values.place.trim(),
         photo: photoUrl,
+        // Any owner edit must be reviewed again, including edits to a published row.
+        status: "pending",
       };
 
       // Update through supabase-js, then confirm with .select() that a row actually
@@ -154,6 +157,12 @@ export default function EditForm({ id }) {
       if (error || !data || data.length === 0) {
         console.error("Update returned no row:", error || "no rows updated");
         setGeneralError("That change wasn't saved");
+        return;
+      }
+
+      if (data[0]?.status !== "pending") {
+        console.error("Edit did not return entry to pending:", data[0]?.status);
+        setGeneralError("Saved, but the entry was not returned to review.");
         return;
       }
 
@@ -208,6 +217,15 @@ export default function EditForm({ id }) {
           <p className="auth-sub" style={{ color: colors.text2 }}>
             Adjust the details, then save. Leave the photo empty to keep the current one.
           </p>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+            <StatusBadge status={entry.status} />
+            <span style={{ fontFamily: fonts.stack, fontSize: 13, color: colors.text2 }}>
+              {entry.status === "published"
+                ? "Saving changes will return this entry to review."
+                : "This entry stays private until a reviewer publishes it."}
+            </span>
+          </div>
 
           {generalError && (
             <p className="auth-error" role="alert" style={{ color: colors.danger }}>

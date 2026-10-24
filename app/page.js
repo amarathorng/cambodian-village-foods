@@ -31,6 +31,7 @@ const t = {
     collectionMeta: (n) => `${String(n).padStart(2, "0")} FOODS`,
     collectionMetaKh: (n) => `${toKhmerNumber(String(n).padStart(2, "0"))} មុខម្ហូប`,
     collectionSupport: "Explore traditional foods connected to Cambodian villages, families, and communities.",
+    contribute: "Contribute",
   },
   kh: {
     loading: "កំពុងផ្ទុក…",
@@ -39,13 +40,14 @@ const t = {
     noResults: "រកមិនឃើញធាតុ",
     resultCount: "Showing",
     ofFoods: "of",
-    foods: "foods",
+    foods: "មុខម្ហូប",
     reset: "សម្អាតការស្វែងរក",
     collectionLabel: "The Village Food Collection",
     collectionKhmer: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
     collectionMeta: (n) => `${String(n).padStart(2, "0")} FOODS`,
     collectionMetaKh: (n) => `${toKhmerNumber(String(n).padStart(2, "0"))} មុខម្ហូប`,
     collectionSupport: "Explore traditional foods connected to Cambodian villages, families, and communities.",
+    contribute: "Contribute",
   },
 };
 export default function Home() {
@@ -139,6 +141,33 @@ export default function Home() {
         <p style={{ margin: "12px 0 26px", maxWidth: "60ch", fontFamily: fonts.stack, fontSize: 16, lineHeight: 1.6, color: colors.text2 }}>
           {tUI.collectionSupport}
         </p>
+        <button
+          type="button"
+          onClick={() => window.location.href = "/contribute"}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            width: "fit-content",
+            marginTop: 8,
+            marginBottom: 20,
+            padding: "10px 18px",
+            fontFamily: fonts.stack,
+            fontSize: 14,
+            fontWeight: 600,
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+            color: colors.green2,
+            background: "none",
+            border: "1px solid " + colors.border,
+            borderRadius: 8,
+            cursor: "pointer",
+          }}
+        >
+          {tUI.contribute}
+          <span aria-hidden="true">→</span>
+        </button>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 18, marginBottom: 12 }}>
           <FoodSearch language={language} value={searchTerm} onChange={setSearchTerm} onClear={() => setSearchTerm("")} />

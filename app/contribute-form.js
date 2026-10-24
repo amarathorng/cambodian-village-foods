@@ -137,6 +137,9 @@ export default function ContributeForm() {
       <p className="auth-sub" style={{ color: colors.text2 }}>
         Share a food, the village it belongs to, and a photo.
       </p>
+      <p className="auth-hint" style={{ marginTop: 0 }}>
+        New entries are reviewed before they appear in the public archive.
+      </p>
 
       {generalError && (
         <p className="auth-error" role="alert" style={{ color: colors.danger }}>

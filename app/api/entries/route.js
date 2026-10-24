@@ -1,32 +1,17 @@
 // app/api/entries/route.js
 import { createSupabaseClient } from "../../supabase";
 import { NextResponse } from "next/server";
-
-// Map a row from the "entries" table into the shape EntryCard expects.
-// Column names come from the actual Supabase schema:
-//   id, created_at, owner, title_english, title_khmer,
-//   description_english, contributor, place, photo
-function toEntry(row) {
-  return {
-    id: row.id,
-    owner: row.owner,
-    title: row.title_english,
-    khmerTitle: row.title_khmer,
-    description: row.description_english,
-    contributor: row.contributor,
-    place: row.place,
-    image: row.photo,
-    created_at: row.created_at,
-  };
-}
+import { toEntry } from "../../entry-mapper";
 
 export async function GET(request) {
   const { supabase } = createSupabaseClient(request);
 
-  // Read every entry, newest first.
+  // Public archive: only reviewer-published rows. Owners and reviewers use the
+  // single-entry endpoint so pending/rejected work stays out of this list.
   const { data, error } = await supabase
     .from("entries")
     .select("*")
+    .eq("status", "published")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -162,6 +147,8 @@ export async function POST(request) {
   const photoUrl = supabase.storage.from(BUCKET).getPublicUrl(objectPath).data.publicUrl;
 
   // Insert ONLY the columns a contributor fills in, plus owner from the session.
+  // status is intentionally omitted: the database default is 'pending', and no
+  // contributor-supplied value can make a new row public.
   const { data, error: insertError } = await supabase
     .from("entries")
     .insert({
@@ -173,7 +160,7 @@ export async function POST(request) {
       place,
       photo: photoUrl,
     })
-    .select("id")
+    .select("id, status")
     .single();
 
   if (insertError) {
