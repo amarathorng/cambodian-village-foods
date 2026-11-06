@@ -83,7 +83,9 @@ export default function ReviewQueue() {
           Pending entries
         </h1>
         <p style={{ margin: "0 0 12px", fontFamily: fonts.stack, fontSize: 15, color: colors.text2 }}>
-          Publishing makes an entry visible in the public archive. Rejecting keeps it private.
+          Publishing makes an entry visible in the public archive. Rejecting
+          returns the entry to its contributor, who can edit it and submit it for
+          review again.
         </p>
 
         {state.message && (
@@ -116,7 +118,7 @@ export default function ReviewQueue() {
         )}
       </div>
 
-      <Footer language={language} copyright="© 2026 Khmer Living Archive" />
+      <Footer language={language} copyright="© 2026 Khmer Living Archive - All rights reserved" />
     </main>
   );
 }

@@ -17,7 +17,7 @@ const collection = {
   curator: "Thorng Amara",
 
   // Where does your knowledge come from? A person, a place, a community.
-  source: "Village elders and local cooks who share the food's history and importance to their community.",
+  source: "Village elders and local cooks who share the food's history and importance to my own community.",
 };
 
 export default collection;

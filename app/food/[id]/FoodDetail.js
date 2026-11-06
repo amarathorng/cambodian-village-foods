@@ -32,7 +32,7 @@ const t = {
   kh: {
     back: "Back to the collection",
     loading: "កំពុងផ្ទុក…",
-    error: "មិនអាចផ្ទុកធាតុបានទេ។",
+    error: "មិនអាចផ្ទុកទិន្នន័យបានទេ។",
     notFound: "This food could not be found.",
     edit: "Edit",
     delete: "Delete",
@@ -169,7 +169,7 @@ export default function FoodDetail({ id }) {
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
             <StatusBadge status={entry.status} />
             <span style={{ fontFamily: fonts.stack, fontSize: 14, color: colors.text2 }}>
-              {entry.status === "rejected" ? tUI.rejectedNotice : tUI.pendingNotice}
+              {entry.status === "returned" ? tUI.rejectedNotice : tUI.pendingNotice}
             </span>
           </div>
         )}

@@ -108,7 +108,7 @@ export default function ReviewCard({ entry, busy, onDecision }) {
           onClick={() => onDecision(entry.id, "reject")}
           style={buttonStyle("reject")}
         >
-          Reject
+          Reject and return
         </button>
       </div>
     </article>

@@ -2,16 +2,18 @@
 // Shared visual label for the review state stored in entries.status.
 import { colors, fonts } from "./theme.js";
 
+// "returned" is the stored value for a submission a reviewer rejected; the
+// entries_status_check constraint allows pending, published, and returned only.
 const LABELS = {
   pending: "Pending review",
   published: "Published",
-  rejected: "Not published",
+  returned: "Not published",
 };
 
 const TONES = {
   pending: colors.gold,
   published: colors.green2,
-  rejected: colors.danger,
+  returned: colors.danger,
 };
 
 export default function StatusBadge({ status }) {
