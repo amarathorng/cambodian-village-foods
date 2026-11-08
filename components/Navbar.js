@@ -16,11 +16,14 @@ import LanguageSwitcher from "./LanguageSwitcher.js";
 // in the project (foods, login, sign up, logout). "Stories", "About" keep English
 // in Khmer mode rather than risk displaying incorrect Khmer text.
 const t = {
-  en: { foods: "Foods", stories: "Stories", about: "About", review: "Review queue", login: "Login", signUp: "Sign Up", logout: "Logout", menu: "Menu" },
+  en: { foods: "Foods", stories: "Stories", about: "About", myEntries: "My entries", review: "Review queue", login: "Login", signUp: "Sign Up", logout: "Logout", menu: "Menu" },
   kh: {
     foods: "អាហារ",
     stories: "Stories",
     about: "About",
+    // No verified Khmer label yet for the contributor's own page, so it stays
+    // in English rather than displaying a guess.
+    myEntries: "My entries",
     review: "Review queue",
     login: "ចូល",
     signUp: "ចុះឈ្មោះ",
@@ -119,6 +122,9 @@ export default function Navbar({ language, setLanguage, container = {} }) {
     { label: tUI.foods, href: "#collection" },
     { label: tUI.stories, href: "#introduction" },
     { label: tUI.about, href: "#about" },
+    // Signed-in contributors get a way into their own tracking page; the
+    // reviewer link stays reviewer-only.
+    ...(user ? [{ label: tUI.myEntries, href: "/my-entries" }] : []),
     ...(isReviewer ? [{ label: tUI.review, href: "/review" }] : []),
   ];
 
