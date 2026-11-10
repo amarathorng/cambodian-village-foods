@@ -2,35 +2,8 @@
 
 This is the starting point for your ICT 340 capstone: a community archive that preserves a piece of Khmer culture. Right now it's one page. By December it will browse, search, take contributions, and publish reviewed entries. Same skeleton for everyone; the collection is yours.
 
-## Lab 1: get this live
+### 1. What This is
 
-Follow the Lab 1 guide on Canvas. The short version:
+Cambodian Village Foods is a digital living archive created to document and preserve traditional Cambodian foods and the cultural stories connected to different villages and local communities. The collection focuses on food traditions, local knowledge, and the history behind dishes that are meaningful to Cambodian communities. Each entry provides information about the food, its story, its associated location, and its contributor or information source. The archive allows visitors to browse and search published food entries, learn about Cambodia's local food heritage, and contribute their own knowledge and stories. Contributions are submitted for review before they become publicly available, helping maintain the accuracy and quality of the collections.
 
-1. Click **Use this template** (top right) → **Create a new repository**. Name it after your archive.
-2. Go to [vercel.com](https://vercel.com), sign in with GitHub, **Add New → Project**, import your new repository, and click **Deploy**.
-3. Clone your repo, open it in VS Code, edit `collection.config.js` (the only file you touch today), then commit and push:
 
-   ```bash
-   git clone https://github.com/YOUR-USERNAME/YOUR-REPO-NAME.git
-   cd YOUR-REPO-NAME
-   code .
-   # edit collection.config.js, then:
-   git add .
-   git commit -m "make it mine"
-   git push
-   ```
-
-4. Watch Vercel redeploy on its own, then submit your live URL to the Lab 1 assignment on Canvas.
-
-## Running it locally (optional today, needed from week 2)
-
-```bash
-npm install
-npm run dev
-```
-
-Then open http://localhost:3000.
-
-## Rules of the road
-
-You own what you ship. Every line that lands in this repository is yours to explain, whoever or whatever wrote it.
