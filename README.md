@@ -11,3 +11,9 @@ Cambodian Village Foods serves both local users who want to preserve their food 
   - English
   - Khmer
 
+### Mobile Accessibility
+  - Responsive page layouts.
+  - Mobile-friendly browsing.
+  - Accessible contribution and review interfaces.
+    
+
