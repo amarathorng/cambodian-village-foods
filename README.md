@@ -1,4 +1,4 @@
-# Khmer Living Archive — starter
+# Khmer Living Archive — Cambodian Living Foods
 
 This is the starting point for your ICT 340 capstone: a community archive that preserves a piece of Khmer culture. Right now it's one page. By December it will browse, search, take contributions, and publish reviewed entries. Same skeleton for everyone; the collection is yours.
 
