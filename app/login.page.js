@@ -9,6 +9,7 @@
 import { useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { colors } from "../components/theme.js";
+import ArchiveLogo from "../components/ArchiveLogo.js";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -52,13 +53,13 @@ export default function Login() {
         {/* LEFT — brand and cultural story */}
         <aside className="auth-brand">
           <a href="/" className="auth-wordmark">
-            <span className="auth-monogram" aria-hidden="true">KLA</span>
+            <ArchiveLogo size={32} />
             KHMER LIVING ARCHIVE
           </a>
 
           <img
             className="auth-brand-img"
-            src="/images/hero-prahok-ang.jpeg"
+            src="/images/prahok-ang.jpg"
             alt="Prahok Ang — traditional Cambodian fish grilled in banana leaves"
             width={940}
             height={350}

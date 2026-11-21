@@ -5,15 +5,15 @@ import { colors, fonts } from "./theme.js";
 
 const t = {
   en: {
-    label: "ABOUT THE ARCHIVE",
+    // label: "ABOUT",
     heading: "About the Archive",
     body: "Khmer Living Archive is a digital collection documenting traditional foods connected to Cambodian villages and communities, preserving the stories and knowledge shared by the people who prepare and remember them.",
     curatedBy: "CURATED BY",
   },
   kh: {
-    label: "ABOUT THE ARCHIVE",
-    heading: "About the Archive",
-    body: "Khmer Living Archive is a digital collection documenting traditional foods connected to Cambodian villages and communities, preserving the stories and knowledge shared by the people who prepare and remember them.",
+    // label: "អំពីបណ្ណសារ",
+    heading: "អំពីបណ្ណសារ",
+    body: "បណ្ណសារជីវិតខ្មែរគឺជាបណ្ដុំឯកសារឌីជីថលដែលចងក្រងឯកសារអំពីម្ហូបប្រពៃណីដែលទាក់ទងនឹងភូមិ និងសហគមន៍ខ្មែរ រក្សាទុករឿងរ៉ាវ និងចំណេះដឹងដែលបានចែករំលែកដោយមនុស្សដែលរៀបចំ និងចងចាំវា។",
     curatedBy: "រៀបរៀងដោយ",
   },
 };
@@ -44,7 +44,7 @@ export default function CuratorSection({ language, curator }) {
         }}
       >
         <span aria-hidden="true" style={{ color: colors.gold }}>▱</span>
-        <span style={{ letterSpacing: "0.08em" }}>{tUI.curatedBy}</span>
+        <span style={{ letterSpacing: language === "kh" ? 0 : "0.08em" }}>{tUI.curatedBy}</span>
         <span style={{ color: colors.text, fontWeight: 700 }}>{curator}</span>
       </div>
     </section>

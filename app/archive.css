@@ -6,6 +6,28 @@
    they live here as real CSS rules.
    ============================================================ */
 
+/* ------------------------------------------------------------
+   Palette tokens
+   These mirror the colour values in components/theme.js. Inline
+   styles read the JS tokens; the rules in this file read these
+   variables, so the palette lives in one place per layer instead
+   of being repeated as hex values across 50 rules.
+   ------------------------------------------------------------ */
+:root {
+  --kla-bg-2: #171c19;
+  --kla-bg-deep: #1b211d;
+  --kla-card: #202620;
+  --kla-elevated: #252c26;
+  --kla-text: #f2eadb;
+  --kla-text-2: #b8b9ad;
+  --kla-muted: #92998f;
+  --kla-green: #245b43;
+  --kla-green-2: #5d8a68;
+  --kla-green-hover: #326b4f;
+  --kla-border: #303831;
+  --kla-danger: #c96a5b;
+}
+
 /* Smooth anchor scrolling (hero -> collection, nav links). */
 html {
   scroll-behavior: smooth;
@@ -15,8 +37,8 @@ html {
    Navigation
    ------------------------------------------------------------ */
 .navbar {
-  background-color: #171c19;
-  border-bottom: 1px solid #303831;
+  background-color: var(--kla-bg-2);
+  border-bottom: 1px solid var(--kla-border);
 }
 
 .navbar-inner {
@@ -61,7 +83,7 @@ html {
 .nav-logout:hover,
 .nav-logout:focus-visible {
   border-color: rgba(201, 106, 91, 0.6);
-  color: #c96a5b;
+  color: var(--kla-danger);
 }
 .nav-logout:focus-visible {
   outline: 2px solid rgba(201, 106, 91, 0.4);
@@ -126,7 +148,7 @@ html {
   max-width: 50ch;
   font-size: 18px;
   line-height: 1.65;
-  color: #b8b9ad;
+  color: var(--kla-text-2);
 }
 
 .hero-action {
@@ -136,8 +158,8 @@ html {
   padding: 14px 26px;
   font-size: 16px;
   font-weight: 700;
-  color: #f2eadb;
-  background-color: #245b43;
+  color: var(--kla-text);
+  background-color: var(--kla-green);
   border-radius: 8px;
   border: none;
   text-decoration: none;
@@ -152,7 +174,7 @@ html {
 
 .hero-action:hover,
 .hero-action:focus-visible {
-  background-color: #5d8a68;
+  background-color: var(--kla-green-2);
 }
 
 .hero-action:hover .arrow-dot,
@@ -175,13 +197,13 @@ html {
   font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #92998f;
+  color: var(--kla-muted);
 }
 .hero-tagline span {
   display: inline-flex;
 }
 .hero-tagline-sep {
-  color: #5d8a68;
+  color: var(--kla-green-2);
   margin: 0 4px;
   display: inline-block;
 }
@@ -194,7 +216,7 @@ html {
 
 .hero-image-frame {
   display: block;
-  border: 1px solid #303831;
+  border: 1px solid var(--kla-border);
   border-radius: 14px;
   overflow: hidden;
 }
@@ -297,8 +319,8 @@ html {
 
 /* LEFT — brand and cultural story panel */
 .auth-brand {
-  background-color: #171c19;
-  border-right: 1px solid #303831;
+  background-color: var(--kla-bg-2);
+  border-right: 1px solid var(--kla-border);
   padding: 56px 60px 72px;
   display: flex;
   flex-direction: column;
@@ -313,20 +335,8 @@ html {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #f2eadb;
+  color: var(--kla-text);
   text-decoration: none;
-}
-.auth-monogram {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background-color: #245b43;
-  color: #f2eadb;
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .auth-brand-img {
@@ -334,7 +344,7 @@ html {
   width: 100%;
   aspect-ratio: 3 / 2;
   object-fit: cover;
-  border: 1px solid #303831;
+  border: 1px solid var(--kla-border);
   border-radius: 14px;
 }
 
@@ -361,7 +371,7 @@ html {
   font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #92998f;
+  color: var(--kla-muted);
 }
 
 /* RIGHT — registration form panel */
@@ -408,19 +418,19 @@ html {
 .auth-label {
   font-size: 13px;
   font-weight: 600;
-  color: #b8b9ad;
+  color: var(--kla-text-2);
 }
 input.auth-input {
   width: 100%;
   padding: 14px 16px;
   font-size: 16px;
-  color: #f2eadb;
-  background-color: #202620;
-  border: 1px solid #303831;
+  color: var(--kla-text);
+  background-color: var(--kla-card);
+  border: 1px solid var(--kla-border);
   border-radius: 8px;
 }
 input.auth-input::placeholder {
-  color: #92998f;
+  color: var(--kla-muted);
 }
 
 .auth-pass-wrap {
@@ -439,20 +449,20 @@ input.auth-input::placeholder {
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #5d8a68;
+  color: var(--kla-green-2);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   padding: 6px 10px;
 }
 .auth-eye:focus-visible {
-  outline: 2px solid #5d8a68;
+  outline: 2px solid var(--kla-green-2);
   outline-offset: 2px;
 }
 
 .auth-hint {
   font-size: 13px;
-  color: #92998f;
+  color: var(--kla-muted);
 }
 
 .auth-button {
@@ -461,15 +471,15 @@ input.auth-input::placeholder {
   padding: 15px 20px;
   font-size: 16px;
   font-weight: 700;
-  color: #f2eadb;
-  background-color: #245b43;
+  color: var(--kla-text);
+  background-color: var(--kla-green);
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 180ms ease, transform 120ms ease;
 }
 .auth-button:hover:not(:disabled) {
-  background-color: #326b4f;
+  background-color: var(--kla-green-hover);
 }
 .auth-button:focus-visible {
   outline: 3px solid rgba(93, 138, 104, 0.35);
@@ -490,7 +500,7 @@ input.auth-input::placeholder {
 .auth-divider-line {
   flex: 1;
   height: 1px;
-  background-color: #303831;
+  background-color: var(--kla-border);
 }
 .auth-divider-text {
   font-size: 13px;
@@ -502,15 +512,15 @@ input.auth-input::placeholder {
   text-align: center;
 }
 .auth-link {
-  color: #5d8a68;
+  color: var(--kla-green-2);
   font-weight: 600;
   text-decoration: none;
 }
 .auth-link:hover {
-  color: #5d8a68;
+  color: var(--kla-green-2);
 }
 .auth-link:focus-visible {
-  outline: 2px solid #5d8a68;
+  outline: 2px solid var(--kla-green-2);
   outline-offset: 2px;
 }
 
@@ -539,7 +549,7 @@ input.auth-input::placeholder {
     padding: 24px 22px 14px;
     gap: 18px;
     border-right: none;
-    border-bottom: 1px solid #303831;
+    border-bottom: 1px solid var(--kla-border);
   }
   .auth-brand-heading {
     font-size: 26px;
@@ -574,16 +584,16 @@ textarea.auth-input {
   min-height: 150px;
   padding: 14px 16px;
   font-size: 16px;
-  color: #f2eadb;
-  background-color: #202620;
-  border: 1px solid #303831;
+  color: var(--kla-text);
+  background-color: var(--kla-card);
+  border: 1px solid var(--kla-border);
   border-radius: 8px;
   resize: vertical;
   font-family: inherit;
   box-sizing: border-box;
 }
 textarea.auth-input::placeholder {
-  color: #92998f;
+  color: var(--kla-muted);
 }
 input.auth-input[type="file"] {
   padding: 10px 14px;
@@ -593,72 +603,259 @@ input.auth-input[type="file"] {
   margin: 0 0 18px;
   font-size: 13px;
   line-height: 1.4;
-  color: #c96a5b;
+  color: var(--kla-danger);
 }
 /* ------------------------------------------------------------
-   Food grid: featured card spans two columns on desktop.
+   Food grid: one uniform card size everywhere. Every column is
+   equal width and every row stretches its cards to the same
+   height, so the collection reads as a symmetrical grid.
    ------------------------------------------------------------ */
 .food-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
-}
-
-.food-grid-featured {
-  grid-column: span 2;
+  align-items: stretch;
 }
 
 @media (max-width: 940px) {
   .food-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
-  }
-  .food-grid-featured {
-    grid-column: span 2;
   }
 }
 
 @media (max-width: 620px) {
   .food-grid {
-    grid-template-columns: 1fr;
-  }
-  .food-grid-featured {
-    grid-column: span 1;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
   }
 }
 
 /* ------------------------------------------------------------
-   Food card
+   Food card: identical frame for every entry.
+   Photo 4:3, two-line title, one-line subtitle, three-line
+   excerpt, a two-column meta row, and a read link pinned to the
+   bottom so every card in a row lines up exactly.
    ------------------------------------------------------------ */
 .food-card {
-  transition: border-color 160ms ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--kla-border);
+  border-radius: 16px;
+  background-color: var(--kla-card);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 160ms ease, transform 220ms ease, box-shadow 220ms ease;
 }
+
 .food-card:hover,
 .food-card:focus-visible {
-  border-color: #5d8a68;
+  border-color: var(--kla-green-2);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.38);
 }
+
 .food-card:focus-visible {
-  outline: 2px solid #5d8a68;
+  outline: 2px solid var(--kla-green-2);
   outline-offset: 2px;
+}
+
+/* --- photo frame: the same 4:3 crop for every card --- */
+.food-card-media {
+  position: relative;
+  flex: none;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background-color: var(--kla-elevated);
+}
+
+/* Soft bottom shade keeps the number pill legible on bright photos. */
+.food-card-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(17, 21, 19, 0.62), rgba(17, 21, 19, 0) 52%);
+  pointer-events: none;
 }
 
 /* Gentle image zoom on hover. */
 .food-card-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
   transition: transform 420ms ease;
 }
+
 .food-card:hover .food-card-media img,
 .food-card:focus-visible .food-card-media img {
   transform: scale(1.05);
 }
 
+.food-card-number {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--kla-text);
+  background-color: rgba(17, 21, 19, 0.78);
+  border: 1px solid rgba(93, 138, 104, 0.55);
+  border-radius: 999px;
+}
+
+.food-card-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  background: linear-gradient(150deg, var(--kla-elevated), var(--kla-bg-deep));
+}
+
+.food-card-placeholder-title {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--kla-text-2);
+}
+
+.food-card-placeholder-text {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--kla-muted);
+}
+
+/* --- text block: fixed line counts keep every card in step --- */
+.food-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 16px 20px 20px;
+}
+
+/* The title takes only the height it needs, so the Khmer name sits directly
+   under the English one. Long titles still stop after two lines. */
+.food-card-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--kla-text);
+}
+
+.food-card-subtitle {
+  margin: 3px 0 0;
+  font-size: 15.5px;
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--kla-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Always reserve one line, even when an entry has no Khmer title. */
+  min-height: 1.6em;
+}
+
+.food-card-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 10px 0 0;
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--kla-muted);
+  min-height: 4.95em; /* three lines of 1.65 */
+}
+
+/* --- contributor / place, separated from the story text --- */
+.food-card-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--kla-border);
+}
+
+.food-card-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.food-card-meta-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--kla-muted);
+}
+
+.food-card-meta-value {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--kla-text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- read link pinned to the card bottom --- */
+.food-card-link {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 /* Subtle arrow drift on the read link. */
 .food-card .arrow-dot {
-  transition: transform 180ms ease;
   display: inline-block;
+  transition: transform 180ms ease;
 }
+
 .food-card:hover .arrow-dot,
 .food-card:focus-visible .arrow-dot {
   transform: translateX(4px);
+}
+
+/* ------------------------------------------------------------
+   Filter chips
+   Comfortable tap targets (36px, 44px on phones) and a visible
+   keyboard focus ring.
+   ------------------------------------------------------------ */
+.filter-chip {
+  min-height: 36px;
+}
+
+.filter-chip:focus-visible {
+  outline: 2px solid var(--kla-green-2);
+  outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+  .filter-chip {
+    min-height: 44px;
+  }
 }
 
 /* ------------------------------------------------------------
@@ -667,12 +864,12 @@ input.auth-input[type="file"] {
 .search-input:focus-visible,
 .auth-input:focus-visible {
   outline: none;
-  border-color: #5d8a68;
+  border-color: var(--kla-green-2);
   box-shadow: 0 0 0 3px rgba(93, 138, 104, 0.18);
 }
 
 .search-clear:hover {
-  color: #f2eadb;
+  color: var(--kla-text);
 }
 
 /* ------------------------------------------------------------
@@ -701,6 +898,7 @@ input.auth-input[type="file"] {
   .reveal {
     animation: none;
   }
+  .food-card,
   .food-card-media img,
   .food-card .arrow-dot,
   .hero-image,
@@ -708,6 +906,10 @@ input.auth-input[type="file"] {
   .hero-action .arrow-dot,
   .auth-button {
     transition: none;
+  }
+  .food-card:hover,
+  .food-card:focus-visible {
+    transform: none;
   }
 }
 

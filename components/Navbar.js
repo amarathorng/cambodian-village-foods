@@ -11,6 +11,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
 import { colors, fonts } from "./theme.js";
 import LanguageSwitcher from "./LanguageSwitcher.js";
+import ArchiveLogo from "./ArchiveLogo.js";
 
 // Khmer interface labels are provided only where a verified translation exists
 // in the project (foods, login, sign up, logout). "Stories", "About" keep English
@@ -19,16 +20,16 @@ const t = {
   en: { foods: "Foods", stories: "Stories", about: "About", myEntries: "My entries", review: "Review queue", login: "Login", signUp: "Sign Up", logout: "Logout", menu: "Menu" },
   kh: {
     foods: "អាហារ",
-    stories: "Stories",
-    about: "About",
+    stories: "រូបភាព",
+    about: "អំពីយើង",
     // No verified Khmer label yet for the contributor's own page, so it stays
     // in English rather than displaying a guess.
-    myEntries: "My entries",
-    review: "Review queue",
+    myEntries: "ការបញ្ចូលរបស់ខ្ញុំ",
+    review: "បញ្ជីរង់ចាំត្រួតពិនិត្យ",
     login: "ចូល",
     signUp: "ចុះឈ្មោះ",
-    logout: "Logout",
-    menu: "Menu",
+    logout: "ចាកចេញ",
+    menu: "ម៉ឺនុយ",
   },
 };
 
@@ -139,25 +140,7 @@ export default function Navbar({ language, setLanguage, container = {} }) {
           className="brand"
           style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", minWidth: 0 }}
         >
-          <span
-            aria-hidden="true"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              backgroundColor: colors.green,
-              color: colors.text,
-              fontFamily: fonts.stack,
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: "0.02em",
-            }}
-          >
-            KLA
-          </span>
+          <ArchiveLogo size={32} />
           <span
             style={{
               fontFamily: fonts.stack,

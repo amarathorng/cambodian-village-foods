@@ -38,16 +38,16 @@ const t = {
     error: "មិនអាចផ្ទុកធាតុបានទេ។",
     empty: "មិនទាន់មានធាតុនៅក្នុងបណ្ណសារទេ។",
     noResults: "រកមិនឃើញធាតុ",
-    resultCount: "Showing",
-    ofFoods: "of",
+    resultCount: "បង្ហាញ",
+    ofFoods: "នៃ",
     foods: "មុខម្ហូប",
     reset: "សម្អាតការស្វែងរក",
-    collectionLabel: "The Village Food Collection",
+    collectionLabel: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
     collectionKhmer: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
     collectionMeta: (n) => `${String(n).padStart(2, "0")} FOODS`,
     collectionMetaKh: (n) => `${toKhmerNumber(String(n).padStart(2, "0"))} មុខម្ហូប`,
-    collectionSupport: "Explore traditional foods connected to Cambodian villages, families, and communities.",
-    contribute: "Contribute",
+    collectionSupport: "ស្វែងរកមុខម្ហូបប្រពៃណីដែលទាក់ទងនឹងភូមិ គ្រួសារ និងសហគមន៍ខ្មែរ។",
+    contribute: "ចូលរួមចំណែក",
   },
 };
 export default function Home() {
@@ -123,7 +123,7 @@ export default function Home() {
         className="collection-section"
         style={{ ...contentMax, paddingTop: 24 }}
       >
-        <span className="section-label" style={{ fontFamily: fonts.stack, fontSize: 12, letterSpacing: "0.16em", color: colors.muted }}>
+        <span className="section-label" style={{ fontFamily: fonts.stack, fontSize: 12, color: colors.muted }}>
           {tUI.collectionKhmer}
         </span>
         <h2 style={{ margin: "14px 0 6px", fontFamily: fonts.stack, fontSize: 34, fontWeight: 700, color: colors.text }}>
@@ -134,7 +134,7 @@ export default function Home() {
             {tUI.collectionMeta(entries.length)}
           </span>
           <span aria-hidden="true" style={{ color: colors.border }}>/</span>
-          <span className="collection-meta" style={{ fontFamily: fonts.khmer, fontSize: 13, letterSpacing: "0.05em", color: colors.text2 }}>
+          <span className="collection-meta" style={{ fontFamily: fonts.khmer, fontSize: 13, color: colors.text2 }}>
             {tUI.collectionMetaKh(entries.length)}
           </span>
         </div>

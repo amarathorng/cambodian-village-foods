@@ -11,6 +11,7 @@
 import { useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { colors } from "../components/theme.js";
+import ArchiveLogo from "../components/ArchiveLogo.js";
 
 const SIGNUP_COOLDOWN_MS = 60 * 1000;
 
@@ -95,16 +96,16 @@ export default function Signup() {
         {/* LEFT — brand and cultural story */}
         <aside className="auth-brand">
           <a href="/" className="auth-wordmark">
-            <span className="auth-monogram" aria-hidden="true">KLA</span>
+            <ArchiveLogo size={32} />
             KHMER LIVING ARCHIVE
           </a>
 
           <img
             className="auth-brand-img"
-            src="/images/hero-prahok-ang.jpeg"
+            src="/images/prahok-ang.jpg"
             alt="Prahok Ang — traditional Cambodian fish grilled in banana leaves"
-            width={960}
-            height={640}
+            width={660}
+            height={440}
             fetchPriority="high"
           />
 

@@ -15,7 +15,7 @@ const t = {
     body: "A living collection of traditional foods, local knowledge, and personal stories from Cambodian villages and communities.",
     action: "Explore the Collection",
     tagline: ["FOOD", "PLACE", "PEOPLE", "MEMORY"],
-    captionName: "PRAHOK ANG",
+    captionName: "NOM BANH CHOK",
     captionSub: "Traditional Cambodian food",
     imageAlt: "Prahok Ang — traditional Cambodian fish grilled in banana leaves",
   },
@@ -26,12 +26,12 @@ const t = {
     heading: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
     // No verified Khmer translation in the project: keep English rather than
     // display incorrect Khmer.
-    body: "A living collection of traditional foods, local knowledge, and personal stories from Cambodian villages and communities.",
-    action: "Explore the Collection",
-    tagline: ["FOOD", "PLACE", "PEOPLE", "MEMORY"],
-    captionName: "PRAHOK ANG",
-    captionSub: "Traditional Cambodian food",
-    imageAlt: "Prahok Ang — traditional Cambodian fish grilled in banana leaves",
+    body: "បណ្ដុំឯកសាររស់រវើកដែលប្រមូលផ្ដុំរឿងរ៉ាវអំពីម្ហូបប្រពៃណី ចំណេះដឹងក្នុងតំបន់ និងបទពិសោធន៍ផ្ទាល់ខ្លួនពីភូមិ និងសហគមន៍នានានៅកម្ពុជា។",
+    action: "ស្វែងរកបណ្ដុំឯកសារ",
+    tagline: ["អាហារ", "ទីកន្លែង", "ជនជាតិ", "អនុស្សាវរីយ៍"],
+    captionName: "នំបញ្ចុក",
+    captionSub: "ម្ហូបប្រពៃណីខ្មែរ",
+    imageAlt: "Nom Banh Chok — traditional Cambodian rice noodle dish",
   },
 };
 
@@ -57,7 +57,9 @@ export default function HeroSection({ language, heroImage }) {
               color: colors.text,
               fontWeight: 700,
               lineHeight: 1.05,
-              letterSpacing: "-0.02em",
+              // Khmer clusters break apart when tracked, so only the English
+              // headline gets the tight editorial spacing.
+              letterSpacing: language === "en" ? "-0.02em" : 0,
               overflowWrap: "anywhere",
             }}
           >

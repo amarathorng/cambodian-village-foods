@@ -10,8 +10,8 @@ const t = {
   },
   kh: {
     // No verified Khmer translation in the project for this passage.
-    heading: "Food is more than something we eat.",
-    body: "Across Cambodian villages, food carries memories of family, place, seasons, and traditions. Every dish has a story shaped by the people who prepare it and the communities that keep it alive.",
+    heading: "ម្ហូបអាហារគឺលើសពីអ្វីដែលយើងគ្រាន់តែទទួលទានទេ។",
+    body: "នៅក្នុងភូមិខ្មែរទូទាំងប្រទេស ម្ហូបអាហារនាំមកនូវអនុស្សាវរីយ៍អំពីគ្រួសារ ទីកន្លែង រដូវកាល និងប្រពៃណី។ ម្ហូបនីមួយៗមានរឿងរ៉ាវដែលបានបង្កើតឡើងដោយមនុស្សដែលរៀបចំវា និងសហគមន៍ដែលរក្សាវាឱ្យរស់នៅ។",
   },
 };
 

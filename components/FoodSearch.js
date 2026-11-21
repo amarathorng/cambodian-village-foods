@@ -58,6 +58,8 @@ export default function FoodSearch({ language, value, onChange, onClear }) {
             bottom: 0,
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
+            minWidth: 32,
             background: "none",
             border: "none",
             color: colors.muted,

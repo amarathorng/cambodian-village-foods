@@ -6,18 +6,18 @@ import { colors, fonts } from "./theme.js";
 
 const t = {
   en: {
-    label: "THE KNOWLEDGE HOLDERS",
+    // label: "THE KNOWLEDGE HOLDERS",
     heading: "The Knowledge Holders",
     body: "These food stories are connected to the knowledge shared by the people who prepare, preserve, and remember the traditions of their communities.",
     holders: ["Village elders", "Local cooks", "Families", "Community storytellers"],
     source: "Village elders and local cooks who share the food's history and importance to their community.",
   },
   kh: {
-    label: "THE KNOWLEDGE HOLDERS",
-    heading: "The Knowledge Holders",
-    body: "These food stories are connected to the knowledge shared by the people who prepare, preserve, and remember the traditions of their communities.",
-    holders: ["Village elders", "Local cooks", "Families", "Community storytellers"],
-    source: "Village elders and local cooks who share the food's history and importance to their community.",
+    // label: "THE KNOWLEDGE HOLDERS",
+    heading: "រក្សាកម្មសិទ្ធិបញ្ញា",
+    body: "រឿងនិទានអាហារទាំងនេះត្រូវបានភ្ជាប់ទៅនឹងចំណេះដឹងដែលមនុស្សដែលរៀបចំ រក្សា និងចងចាំប្រពៃណីនៃសហគមន៍របស់ពួកគេបានចែករំលែក។",
+    holders: ["អ្នកភូមិជំនាន់មុន", "អ្នកចម្អិនតាមភូមិ", "គ្រួសារ", "អ្នកក្នុងសហគមន៍ដែលចែករំលែករឿងនិទាន"],
+    source: "Villageសសសស elders and local cooks who share the food's history and importance to their community.",
   },
 };
 

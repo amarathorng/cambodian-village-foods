@@ -1,6 +1,7 @@
 // components/Footer.js
 // Restrained footer with wordmark, tagline, navigation, language, and copyright.
 import { colors, fonts } from "./theme.js";
+import ArchiveLogo from "./ArchiveLogo.js";
 
 const t = {
   en: {
@@ -10,10 +11,10 @@ const t = {
     about: "About",
   },
   kh: {
-    tagline: "Preserving everyday Cambodian food stories.",
+    tagline: "រក្សារឿងនិទានអាហារប្រចាំថ្ងៃរបស់ប្រជាជនខ្មែរ។",
     foods: "អាហារ",
-    stories: "Stories",
-    about: "About",
+    stories: "រឿងនិទាន",
+    about: "អំពីយើង",
   },
 };
 
@@ -28,9 +29,12 @@ export default function Footer({ language, copyright }) {
     <footer className="footer" style={{ borderTop: `1px solid ${colors.border}`, marginTop: 64, padding: "44px 24px 40px" }}>
       <div className="footer-inner" style={{ maxWidth: 1180, margin: "0 auto" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-          <p style={{ margin: 0, fontFamily: fonts.stack, fontSize: 16, fontWeight: 700, letterSpacing: "0.06em", color: colors.text }}>
-            KHMER LIVING ARCHIVE
-          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <ArchiveLogo size={28} />
+            <p style={{ margin: 0, fontFamily: fonts.stack, fontSize: 16, fontWeight: 700, letterSpacing: "0.06em", color: colors.text }}>
+              KHMER LIVING ARCHIVE
+            </p>
+          </div>
           <p style={{ margin: 0, fontFamily: fonts.stack, fontSize: 14, color: colors.text2 }}>
             {tUI.tagline}
           </p>
