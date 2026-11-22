@@ -45,7 +45,7 @@ export default function ArchiveStory({ language }) {
       <div className="container story-grid">
         <Reveal as="figure" className="story-figure">
           <img
-            src="/images/hero-prahok-ang.jpeg"
+            src="/images/prahok-ang.jpg"
             alt={tUI.imageAlt}
             width={515}
             height={388}
