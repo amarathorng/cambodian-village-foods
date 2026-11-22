@@ -332,11 +332,11 @@ Open [http://localhost:3000](http://localhost:3000). Use a Supabase publishable 
 - At least eight real entries, each with a credited source: Fully verified, 8 entries listed in Section 6 and source accuracy and publication permission need confirmation.
 - Khmer renders on every screen a user meets, including the queue: Yes, Tested on 21-Nov-2026
 - Works at phone width: Yes, tested on 21-Nov-2026
-- No test entries, lorem ipsum or TODO comments in shipped pages: [Not verified]
-- No console errors on the main pages: [Not verified]
+- No test entries, lorem ipsum or TODO comments in shipped pages: Yes
+- No console errors on the main pages: Yes
 - jesseorndorff is a collaborator on this repo: Yes
 - Supabase project restored and awake on 21-Nov-2026, Yes
-- Demo video link opens in a private window: [Not verified], [link not recorded]
-- Reflection pasted in the Canvas submission: [Not verified]
-- Posted in the Show Your Archive discussion: [Not verified]
-- Q&A slot booked for [date and time not verified]
+- Demo video link opens in a private window: Yes, https://drive.google.com/file/d/1w1sOueooFNG0zg0wUUZDdAX_cknfe5I7/view?usp=sharing
+- Reflection pasted in the Canvas submission: Yes
+- Posted in the Show Your Archive discussion: Not yet 
+- Q&A slot booked for date and time, Waiting for approval from professor due i have account issue.
