@@ -1,69 +1,86 @@
 // app/food/[id]/edit/EditForm.js
 // Edit page for an entry the signed-in user owns. Loads the record from the
-// existing /api/entries endpoint, pre-fills the same form used by /contribute
-// (shared fields + shared validation), and on save updates the row through
-// supabase-js. The photo is optional here: leaving the file input empty keeps the
-// existing photo. After the update it chains .select() and, if no row came back
-// (e.g. ownership no longer matches), tells the user the change wasn't saved.
+// existing /api/entries/:id endpoint, pre-fills the same form used by
+// /contribute (shared fields + shared validation), and on save updates the row
+// through supabase-js. The photo is optional: leaving the file input empty keeps
+// the existing photograph. After the update it chains .select() and, if no row
+// came back (e.g. ownership no longer matches), tells the user it wasn't saved.
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { createBrowserClient } from "@supabase/ssr";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, fonts } from "../../../../components/theme.js";
 import Navbar from "../../../../components/Navbar.js";
 import Footer from "../../../../components/Footer.js";
 import EntryFields from "../../../../components/EntryFields.js";
 import StatusBadge from "../../../../components/StatusBadge.js";
 import { validate } from "../../../../components/entryValidation.js";
+import { useLanguage } from "../../../../components/useLanguage.js";
+import { useSessionUser } from "../../../../components/useSessionUser.js";
 
-const wrapStyle = {
-  maxWidth: 640,
-  margin: "0 auto",
-  padding: "56px 24px 72px",
-  display: "flex",
-  flexDirection: "column",
+const t = {
+  en: {
+    kicker: "EDIT ENTRY",
+    title: "Edit this food story",
+    lead: "Adjust the details, then save. Leave the photo empty to keep the current one.",
+    loading: "Loading the entry…",
+    notFound: "This entry could not be found.",
+    signedOut: "Sign in before editing an entry.",
+    signIn: "Sign in",
+    notOwner: "You can only edit an entry you created.",
+    backToEntry: "Back to the entry",
+    cancel: "Cancel and go back",
+    save: "Save changes",
+    saving: "Saving…",
+    saveNote: "Saving returns this entry to review before it is public again.",
+    private: "This entry stays private until a reviewer publishes it.",
+    photoNote: "New photograph (optional)",
+    photoError: "Could not upload the new photo. Please try again.",
+    notSaved: "That change wasn't saved",
+    notResubmitted: "Saved, but the entry was not returned to review.",
+  },
+  kh: {
+    kicker: "កែសម្រួលធាតុ",
+    title: "កែសម្រួលរឿងរ៉ាវអាហារនេះ",
+    lead: "កែសម្រួលព័ត៌មានលម្អិត រួចរក្សាទុក។ ទុករូបថតទំនេរ ដើម្បីរក្សារូបថតបច្ចុប្បន្ន។",
+    loading: "កំពុងផ្ទុក…",
+    notFound: "រកមិនឃើញធាតុនេះទេ។",
+    signedOut: "សូមចូលគណនីជាមុន ទើបកែសម្រួលធាតុបាន។",
+    signIn: "ចូល",
+    notOwner: "អ្នកអាចកែសម្រួលបានតែធាតុដែលអ្នកបានបង្កើតប៉ុណ្ណោះ។",
+    backToEntry: "ត្រឡប់ទៅធាតុវិញ",
+    cancel: "បោះបង់ ហើយត្រឡប់ក្រោយ",
+    save: "រក្សាទុកការផ្លាស់ប្ដូរ",
+    saving: "កំពុងរក្សាទុក…",
+    saveNote: "ការរក្សាទុកនឹងបញ្ជូនធាតុនេះទៅត្រួតពិនិត្យឡើងវិញ មុនពេលវាចេញជាសាធារណៈម្ដងទៀត។",
+    private: "ធាតុនេះនៅឯកជន រហូតដល់អ្នកត្រួតពិនិត្យចេញផ្សាយវា។",
+    photoNote: "រូបថតថ្មី (មិនចាំបាច់)",
+    photoError: "មិនអាចផ្ទុករូបថតថ្មីឡើងបានទេ។ សូមព្យាយាមម្ដងទៀត។",
+    notSaved: "ការផ្លាស់ប្ដូរនេះមិនត្រូវបានរក្សាទុកទេ",
+    notResubmitted: "បានរក្សាទុក ប៉ុន្តែធាតុមិនត្រូវបានបញ្ជូនទៅត្រួតពិនិត្យវិញទេ។",
+  },
 };
 
 export default function EditForm({ id }) {
-  const [language, setLanguage] = useState("en");
+  const [language, setLanguage] = useLanguage();
+  const { user, supabase } = useSessionUser();
   const [loadStatus, setLoadStatus] = useState("loading"); // loading | ready | notfound
   const [entry, setEntry] = useState(null);
-  const [user, setUser] = useState(undefined); // undefined = checking, null = signed out
   const [values, setValues] = useState(null);
   const [photo, setPhoto] = useState(null);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const supabase = useMemo(
-    () =>
-      createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-      ),
-    []
-  );
   const router = useRouter();
-
-  // Current signed-in user.
-  useEffect(() => {
-    let active = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (active) setUser(data.user || null);
-    });
-    return () => {
-      active = false;
-    };
-  }, [supabase]);
+  const tUI = t[language] || t.en;
 
   // Load the record so the form can be pre-filled.
   useEffect(() => {
     let active = true;
     async function load() {
       try {
-        const res = await fetch(`/api/entries/${id}`);
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || "Could not load.");
+        const response = await fetch(`/api/entries/${id}`);
+        const json = await response.json();
+        if (!response.ok) throw new Error(json.error || "Could not load.");
         const found = json.entry;
         if (!found) {
           if (active) setLoadStatus("notfound");
@@ -75,6 +92,7 @@ export default function EditForm({ id }) {
           title_english: found.title || "",
           title_khmer: found.khmerTitle || "",
           description_english: found.description || "",
+          description_kh: found.descriptionKh || "",
           contributor: found.contributor || "",
           place: found.place || "",
         });
@@ -87,26 +105,32 @@ export default function EditForm({ id }) {
     return () => {
       active = false;
     };
-  }, [id, supabase]);
+  }, [id]);
 
   // The record must belong to the current session user.
   const isOwner = !!entry && !!user && String(entry.owner) === String(user.id);
 
-  const setField = (name) => (e) => {
-    setValues((v) => ({ ...v, [name]: e.target.value }));
-    setErrors((prev) => (prev[name] ? { ...prev, [name]: undefined } : prev));
+  const setField = (name) => (event) => {
+    setValues((current) => ({ ...current, [name]: event.target.value }));
+    setErrors((previous) =>
+      previous[name] ? { ...previous, [name]: undefined } : previous
+    );
   };
 
-  const handlePhoto = (e) => {
-    setPhoto(e.target.files && e.target.files[0] ? e.target.files[0] : null);
-    setErrors((prev) => (prev.photo ? { ...prev, photo: undefined } : prev));
+  const handlePhoto = (event) => {
+    setPhoto(event.target.files && event.target.files[0] ? event.target.files[0] : null);
+    setErrors((previous) => (previous.photo ? { ...previous, photo: undefined } : previous));
   };
 
-  async function handleSubmit(ev) {
-    ev.preventDefault();
+  const removePhoto = () => {
+    setPhoto(null);
+  };
+
+  async function handleSubmit(event) {
+    event.preventDefault();
     setGeneralError("");
     // Same validation rules as /contribute, but the photo is optional here.
-    const nextErrors = validate(values, photo, false);
+    const nextErrors = validate(values, photo, false, language);
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
@@ -128,7 +152,7 @@ export default function EditForm({ id }) {
           });
         if (uploadError) {
           console.error("Edit photo upload failed:", uploadError);
-          setGeneralError("Could not upload the new photo. Please try again.");
+          setGeneralError(tUI.photoError);
           return;
         }
         photoUrl = supabase.storage.from("photos").getPublicUrl(objectPath).data.publicUrl;
@@ -138,6 +162,8 @@ export default function EditForm({ id }) {
         title_english: values.title_english.trim(),
         title_khmer: values.title_khmer.trim(),
         description_english: values.description_english.trim(),
+        // Optional: an empty Khmer story clears the column back to null.
+        description_kh: values.description_kh.trim() || null,
         contributor: values.contributor.trim() || null,
         place: values.place.trim(),
         photo: photoUrl,
@@ -156,106 +182,119 @@ export default function EditForm({ id }) {
 
       if (error || !data || data.length === 0) {
         console.error("Update returned no row:", error || "no rows updated");
-        setGeneralError("That change wasn't saved");
+        setGeneralError(tUI.notSaved);
         return;
       }
 
       if (data[0]?.status !== "pending") {
         console.error("Edit did not return entry to pending:", data[0]?.status);
-        setGeneralError("Saved, but the entry was not returned to review.");
+        setGeneralError(tUI.notResubmitted);
         return;
       }
 
       router.push(`/food/${id}`);
-    } catch (err) {
-      console.error("Edit failed:", err);
-      setGeneralError("That change wasn't saved");
+    } catch (error) {
+      console.error("Edit failed:", error);
+      setGeneralError(tUI.notSaved);
     } finally {
       setSubmitting(false);
     }
   }
 
+
   return (
-    <main style={{ backgroundColor: colors.bg, color: colors.text }}>
-      <Navbar language={language} setLanguage={setLanguage} container={{ maxWidth: 1180, margin: "0 auto" }} />
+    <div>
+      <Navbar language={language} setLanguage={setLanguage} />
 
-      {loadStatus === "loading" || user === undefined ? (
-        <main style={wrapStyle}>
-          <p style={{ color: colors.text2, fontSize: 15 }}>Loading the entry…</p>
-        </main>
-      ) : loadStatus === "notfound" ? (
-        <main style={wrapStyle}>
-          <p style={{ color: colors.text2, fontSize: 15 }}>This entry could not be found.</p>
-        </main>
-      ) : !user ? (
-        <main style={wrapStyle}>
-          <p className="auth-kicker" style={{ color: colors.gold, margin: 0 }}>KHMER LIVING ARCHIVE</p>
-          <h1 className="auth-title" style={{ color: colors.text, margin: "10px 0 8px" }}>Edit entry</h1>
-          <p className="auth-sub" style={{ color: colors.text2 }}>
-            Please{" "}
-            <a href="/login" className="auth-link">
-              sign in
-            </a>{" "}
-            before editing an entry.
-          </p>
-        </main>
-      ) : !isOwner ? (
-        <main style={wrapStyle}>
-          <p className="auth-kicker" style={{ color: colors.gold, margin: 0 }}>KHMER LIVING ARCHIVE</p>
-          <h1 className="auth-title" style={{ color: colors.text, margin: "10px 0 8px" }}>Edit entry</h1>
-          <p className="auth-sub" style={{ color: colors.text2 }}>
-            You can only edit an entry you created.
-          </p>
-          <p className="auth-switch">
-            <a href={`/food/${id}`} className="auth-link">Back to the entry</a>
-          </p>
-        </main>
-      ) : (
-        <main style={wrapStyle}>
-          <p className="auth-kicker" style={{ color: colors.gold, margin: 0 }}>KHMER LIVING ARCHIVE</p>
-          <h1 className="auth-title" style={{ color: colors.text, margin: "10px 0 8px" }}>Edit entry</h1>
-          <p className="auth-sub" style={{ color: colors.text2 }}>
-            Adjust the details, then save. Leave the photo empty to keep the current one.
-          </p>
+      <main id="main-content" className="form-page">
+        <div className="container container--reading">
+          {loadStatus === "loading" || user === undefined ? (
+            <p className="status-note" role="status">{tUI.loading}</p>
+          ) : loadStatus === "notfound" ? (
+            <div className="empty-state">
+              <p className="empty-state-title">{tUI.notFound}</p>
+              <a href={`/food/${id}`} className="btn btn--secondary btn--sm">{tUI.backToEntry}</a>
+            </div>
+          ) : !user ? (
+            <div className="gate-card">
+              <p className="auth-kicker">{tUI.kicker}</p>
+              <h1 className="form-heading">{tUI.title}</h1>
+              <p className="auth-sub">
+                {tUI.signedOut}{" "}
+                <a href="/login" className="auth-link">{tUI.signIn}</a>
+              </p>
+            </div>
+          ) : !isOwner ? (
+            <div className="gate-card">
+              <p className="auth-kicker">{tUI.kicker}</p>
+              <h1 className="form-heading">{tUI.title}</h1>
+              <p className="auth-sub">{tUI.notOwner}</p>
+              <a href={`/food/${id}`} className="btn btn--secondary btn--sm">{tUI.backToEntry}</a>
+            </div>
+          ) : (
+            <>
+              <div className="form-head">
+                <p className="auth-kicker">{tUI.kicker}</p>
+                <h1 className="form-heading">{tUI.title}</h1>
+                <p className="form-lead">{tUI.lead}</p>
+                <div className="status-note status-note--inline">
+                  <StatusBadge status={entry.status} language={language} />
+                  <span>{entry.status === "published" ? tUI.saveNote : tUI.private}</span>
+                </div>
+              </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
-            <StatusBadge status={entry.status} />
-            <span style={{ fontFamily: fonts.stack, fontSize: 13, color: colors.text2 }}>
-              {entry.status === "published"
-                ? "Saving changes will return this entry to review."
-                : "This entry stays private until a reviewer publishes it."}
-            </span>
-          </div>
+              {generalError && (
+                <div className="toast toast--error form-error-summary" role="alert">
+                  <span>{generalError}</span>
+                </div>
+              )}
 
-          {generalError && (
-            <p className="auth-error" role="alert" style={{ color: colors.danger }}>
-              {generalError}
-            </p>
+              <div className="form-card">
+                <form
+                  onSubmit={handleSubmit}
+                  aria-busy={submitting ? "true" : "false"}
+                  noValidate
+                >
+                  <fieldset disabled={submitting} style={{ border: "none", margin: 0, padding: 0 }}>
+                    <EntryFields
+                      values={values}
+                      errors={errors}
+                      setField={setField}
+                      handlePhoto={handlePhoto}
+                      onRemovePhoto={removePhoto}
+                      photo={photo}
+                      photoNote={tUI.photoNote}
+                      photoRequired={false}
+                      language={language}
+                    />
+                  </fieldset>
+
+                  <div className="form-actions">
+                    <button type="submit" className="btn btn--primary btn--block" disabled={submitting}>
+                      {submitting ? (
+                        <>
+                          <span className="spinner" aria-hidden="true" />
+                          {tUI.saving}
+                        </>
+                      ) : (
+                        tUI.save
+                      )}
+                    </button>
+                    <p className="form-note">{tUI.saveNote}</p>
+                  </div>
+                </form>
+              </div>
+
+              <p className="auth-switch">
+                <a href={`/food/${id}`} className="auth-link">{tUI.cancel}</a>
+              </p>
+            </>
           )}
+        </div>
+      </main>
 
-          <form onSubmit={handleSubmit} aria-busy={submitting ? "true" : "false"} noValidate>
-            <fieldset disabled={submitting} style={{ border: "none", margin: 0, padding: 0 }}>
-              <EntryFields
-                values={values}
-                errors={errors}
-                setField={setField}
-                handlePhoto={handlePhoto}
-                photoNote="Photo (optional — leave empty to keep current)"
-              />
-            </fieldset>
-
-            <button type="submit" className="auth-button" disabled={submitting}>
-              {submitting ? "Saving…" : "Save changes"}
-            </button>
-          </form>
-
-          <p className="auth-switch" style={{ color: colors.text2 }}>
-            <a href={`/food/${id}`} className="auth-link">Cancel and go back</a>
-          </p>
-        </main>
-      )}
-
-      <Footer language={language} copyright="© 2026 Khmer Living Archive" />
-    </main>
+      <Footer language={language} />
+    </div>
   );
 }
+

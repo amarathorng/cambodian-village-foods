@@ -11,7 +11,7 @@ export async function GET(request) {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) {
     return NextResponse.json(
-      { error: "You must be signed in to review entries." },
+      { error: "You must be signed in to review entries.", code: "sign_in_to_review" },
       { status: 401 }
     );
   }
@@ -22,14 +22,14 @@ export async function GET(request) {
   if (reviewerError) {
     console.error("Reviewer check failed:", reviewerError);
     return NextResponse.json(
-      { error: "Could not verify reviewer access." },
+      { error: "Could not verify reviewer access.", code: "reviewer_check_failed" },
       { status: 500 }
     );
   }
 
   if (isReviewer !== true) {
     return NextResponse.json(
-      { error: "You do not have reviewer access." },
+      { error: "You do not have reviewer access.", code: "no_reviewer_access" },
       { status: 403 }
     );
   }
@@ -43,7 +43,7 @@ export async function GET(request) {
   if (error) {
     console.error("Review queue read failed:", error);
     return NextResponse.json(
-      { error: "Could not load the review queue." },
+      { error: "Could not load the review queue.", code: "review_load_failed" },
       { status: 500 }
     );
   }

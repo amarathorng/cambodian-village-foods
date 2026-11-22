@@ -6,16 +6,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { colors, fonts } from "../../components/theme.js";
 import Navbar from "../../components/Navbar.js";
 import Footer from "../../components/Footer.js";
 import StatusSummary from "../../components/StatusSummary.js";
 import MyEntryCard from "../../components/MyEntryCard.js";
+import { apiMessage } from "../../components/api-errors.js";
+import { toKhmerNumber } from "../../components/theme.js";
+import { useLanguage } from "../../components/useLanguage.js";
 
-const wrap = { maxWidth: 900, margin: "0 auto", padding: "48px 24px 72px" };
-
-// Unverified Khmer interface strings stay in English, matching the rest of the
-// project; only labels that already exist elsewhere are translated.
+// Khmer UI strings cover every label on this page; entry titles, stories,
+// names, and places are contributor content and are shown exactly as entered.
 const t = {
   en: {
     kicker: "MY ENTRIES",
@@ -31,39 +31,34 @@ const t = {
     add: "Add an entry",
     refresh: "Refresh status",
     checked: "Last checked",
+    retry: "Try again",
   },
   kh: {
-    kicker: "MY ENTRIES",
-    title: "Your submissions",
+    kicker: "ការបញ្ចូលរបស់ខ្ញុំ",
+    title: "ការដាក់ស្នើរបស់អ្នក",
     intro:
-      "Every entry you have sent to the archive, and where it stands in review. Pending and returned entries stay private until a reviewer publishes them.",
+      "រាល់ធាតុដែលអ្នកបានផ្ញើទៅបណ្ណសារ និងស្ថានភាពត្រួតពិនិត្យរបស់វា។ ធាតុដែលកំពុងរង់ចាំ និងធាតុដែលបានបញ្ជូនមកវិញ នៅឯកជន រហូតដល់អ្នកត្រួតពិនិត្យចេញផ្សាយវា។",
     loading: "កំពុងផ្ទុក…",
-    auth: "Sign in to see the entries you have submitted.",
+    auth: "សូមចូលគណនី ដើម្បីមើលធាតុដែលអ្នកបានដាក់ស្នើ។",
     signIn: "ចូល",
-    error: "មិនអាចផ្ទុកធាតុបានទេ។",
-    empty: "You have not submitted an entry yet.",
-    emptyHint: "Add an entry and it will appear here while it waits for review.",
-    add: "Add an entry",
-    refresh: "Refresh status",
-    checked: "Last checked",
+    error: "មិនអាចផ្ទុកធាតុរបស់អ្នកបានទេ។",
+    empty: "អ្នកមិនទាន់បានដាក់ស្នើធាតុណាមួយនៅឡើយទេ។",
+    emptyHint: "បន្ថែមធាតុមួយ ហើយវានឹងបង្ហាញនៅទីនេះ ខណៈពេលរង់ចាំការត្រួតពិនិត្យ។",
+    add: "បន្ថែមធាតុ",
+    refresh: "ធ្វើបច្ចុប្បន្នភាពស្ថានភាព",
+    checked: "ពិនិត្យចុងក្រោយ",
+    retry: "ព្យាយាមម្ដងទៀត",
   },
-};
-
-const refreshStyle = {
-  fontFamily: fonts.stack,
-  fontSize: 14,
-  fontWeight: 600,
-  color: colors.text2,
-  background: "none",
-  border: `1px solid ${colors.border}`,
-  borderRadius: 6,
-  padding: "8px 16px",
-  cursor: "pointer",
 };
 
 export default function MyEntries() {
-  const [language, setLanguage] = useState("en");
-  const [state, setState] = useState({ status: "loading", entries: [], message: "", checkedAt: "" });
+  const [language, setLanguage] = useLanguage();
+  const [state, setState] = useState({
+    status: "loading",
+    entries: [],
+    code: "",
+    checkedAt: "",
+  });
   const [reloadKey, setReloadKey] = useState(0);
   const tUI = t[language] || t.en;
 
@@ -75,25 +70,38 @@ export default function MyEntries() {
     async function load() {
       try {
         // no-store: the review status must be current on every visit.
-        const res = await fetch("/api/my-entries", { cache: "no-store" });
-        const json = await res.json().catch(() => ({}));
+        const response = await fetch("/api/my-entries", { cache: "no-store" });
+        const json = await response.json().catch(() => ({}));
         if (!active) return;
-        if (res.status === 401) {
-          setState({ status: "auth", entries: [], message: "", checkedAt: "" });
+        if (response.status === 401) {
+          setState({ status: "auth", entries: [], code: "", checkedAt: "" });
           return;
         }
-        if (!res.ok) throw new Error(json.error || "Could not load your entries.");
+        if (!response.ok) {
+          // Keep the API's stable code; the message is localized at render time
+          // so it follows the language the reader is using right now.
+          setState({ status: "error", entries: [], code: json.code || "", checkedAt: "" });
+          return;
+        }
         setState({
           status: "ready",
           entries: json.entries || [],
-          message: "",
+          code: "",
           checkedAt: new Date().toLocaleTimeString("en-GB", {
             hour: "2-digit",
             minute: "2-digit",
           }),
         });
-      } catch (err) {
-        if (active) setState({ status: "error", entries: [], message: err.message, checkedAt: "" });
+      } catch (error) {
+        // The raw error stays in the console; the reader sees a localized line.
+        console.error("My entries request failed:", error);
+        if (active)
+          setState({
+            status: "error",
+            entries: [],
+            code: "",
+            checkedAt: "",
+          });
       }
     }
 
@@ -104,110 +112,100 @@ export default function MyEntries() {
   }, [reloadKey]);
 
   const message =
-    state.status === "auth" ? tUI.auth : state.status === "error" ? state.message || tUI.error : "";
-
+    state.status === "auth"
+      ? tUI.auth
+      : state.status === "error"
+        ? apiMessage(state.code, language, tUI.error)
+        : "";
   return (
-    <main style={{ backgroundColor: colors.bg, color: colors.text, minHeight: "100vh" }}>
-      <Navbar language={language} setLanguage={setLanguage} container={{ maxWidth: 1180, margin: "0 auto" }} />
+    <div>
+      <Navbar language={language} setLanguage={setLanguage} />
 
-      <div style={wrap}>
-        <p className="auth-kicker" style={{ color: colors.gold, margin: 0 }}>
-          {tUI.kicker}
-        </p>
-        <h1 className="auth-title" style={{ color: colors.text, margin: "10px 0 8px" }}>
-          {tUI.title}
-        </h1>
-        <p
-          style={{
-            margin: 0,
-            maxWidth: "62ch",
-            fontFamily: fonts.stack,
-            fontSize: 15,
-            lineHeight: 1.6,
-            color: colors.text2,
-          }}
-        >
-          {tUI.intro}
-        </p>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", marginTop: 20 }}>
-          <button
-            type="button"
-            onClick={() => setReloadKey((key) => key + 1)}
-            disabled={state.status === "loading"}
-            style={refreshStyle}
-          >
-            {tUI.refresh}
-          </button>
-          {state.checkedAt && (
-            <span style={{ fontFamily: fonts.stack, fontSize: 13, color: colors.muted }}>
-              {tUI.checked} {state.checkedAt}
-            </span>
-          )}
+      <main id="main-content" className="container">
+        <div className="page-head">
+          <div>
+            <p className="eyebrow">{tUI.kicker}</p>
+            <h1 className="page-title">{tUI.title}</h1>
+            <p className="page-lead">{tUI.intro}</p>
+          </div>
+          <div className="page-actions">
+            <button
+              type="button"
+              className="btn btn--quiet btn--sm"
+              onClick={() => setReloadKey((key) => key + 1)}
+              disabled={state.status === "loading"}
+            >
+              {tUI.refresh}
+            </button>
+            <a className="btn btn--primary btn--sm" href="/contribute">
+              {tUI.add}
+            </a>
+          </div>
         </div>
 
+        {state.checkedAt && (
+          <p className="page-meta">
+            {tUI.checked}{" "}
+            {language === "kh" ? toKhmerNumber(state.checkedAt) : state.checkedAt}
+          </p>
+        )}
+
         {message && (
-          <p
-            role="alert"
-            style={{
-              margin: "16px 0 0",
-              fontFamily: fonts.stack,
-              fontSize: 14,
-              color: state.status === "auth" ? colors.text2 : colors.danger,
-            }}
-          >
+          <div className="status-note" role="alert">
             {message}
             {state.status === "auth" && (
               <>
                 {" "}
-                <a href="/login" className="auth-link">
+                <a className="auth-link" href="/login">
                   {tUI.signIn}
                 </a>
               </>
             )}
-          </p>
+            {state.status === "error" && (
+              <>
+                {" "}
+                <button
+                  type="button"
+                  className="link-action"
+                  onClick={() => setReloadKey((key) => key + 1)}
+                >
+                  {tUI.retry}
+                </button>
+              </>
+            )}
+          </div>
         )}
 
         {state.status === "loading" ? (
-          <p style={{ marginTop: 22, fontFamily: fonts.stack, fontSize: 15, color: colors.text2 }}>
+          <p className="status-note" role="status">
             {tUI.loading}
           </p>
         ) : state.status === "ready" && state.entries.length === 0 ? (
-          <div
-            style={{
-              marginTop: 22,
-              padding: "36px 24px",
-              textAlign: "center",
-              borderRadius: 14,
-              border: `1px dashed ${colors.border}`,
-              backgroundColor: colors.bg2,
-            }}
-          >
-            <p style={{ margin: 0, fontFamily: fonts.stack, fontSize: 17, fontWeight: 600, color: colors.text }}>
-              {tUI.empty}
-            </p>
-            <p style={{ margin: "8px 0 0", fontFamily: fonts.stack, fontSize: 14.5, color: colors.text2 }}>
-              {tUI.emptyHint}
-            </p>
-            <a
-              href="/contribute"
-              className="auth-button"
-              style={{ display: "inline-block", width: "auto", marginTop: 18, textDecoration: "none" }}
-            >
-              {tUI.add}
-            </a>
+          <div className="empty-state">
+            <p className="empty-state-motif" aria-hidden="true">✦</p>
+            <h2 className="empty-state-title">{tUI.empty}</h2>
+            <p className="empty-state-text">{tUI.emptyHint}</p>
+            <div className="empty-state-actions">
+              <a className="btn btn--primary btn--sm" href="/contribute">
+                {tUI.add}
+                <span className="arrow" aria-hidden="true">→</span>
+              </a>
+            </div>
           </div>
         ) : state.status === "ready" ? (
           <>
             <StatusSummary entries={state.entries} language={language} />
-            {state.entries.map((entry) => (
-              <MyEntryCard key={entry.id} entry={entry} />
-            ))}
+            <div className="entry-list">
+              {state.entries.map((entry) => (
+                <MyEntryCard key={entry.id} entry={entry} language={language} />
+              ))}
+            </div>
           </>
         ) : null}
-      </div>
+      </main>
 
-      <Footer language={language} copyright="© 2026 Khmer Living Archive" />
-    </main>
+      <Footer language={language} />
+    </div>
   );
 }
+

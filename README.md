@@ -99,13 +99,15 @@ Supabase PostgreSQL stores the archive data. The application's entry queries use
 
 | Data category | Purpose |
 |---|---|
-| Entry content | English title, Khmer title, description, and place |
+| Entry content | English title, Khmer title, English description, optional Khmer description, and place |
 | Attribution | Optional contributor name |
 | Photograph | Public URL for the stored food photograph |
 | Ownership | Authenticated owner's user ID |
 | Review state | `pending`, `published`, or `returned` status |
 
 The exact table columns and relationships must be configured consistently with the application's queries. The repository provides the `supabase/review_entry.sql` setup for authorized review decisions.
+
+The optional Khmer description (`description_kh`) is added by `supabase/add_description_kh.sql`. That file must be run in the Supabase SQL editor before deploying code that writes the column. The column is nullable: when it is empty or null, the food cards and the food detail page fall back to the English description, so entries created before the migration keep working unchanged. The Khmer description is optional in both the contribution form and the edit form, is capped at the same 3000 characters as the English description, and is included in the home-page search. This field is not covered by automated tests because the repository has no test framework; it was validated with `npm run build` and manual checks of the forms and the detail page.
 
 The database functions used by the application are:
 
@@ -328,12 +330,12 @@ Open [http://localhost:3000](http://localhost:3000). Use a Supabase publishable 
 - Contributors can edit and delete only their own entries: Yes, tested 2026-11-20
 - No secrets anywhere in the repo history: yes, checked with Gitleaks (working directory and Git history) on 20 November 2026.
 - At least eight real entries, each with a credited source: Fully verified, 8 entries listed in Section 6 and source accuracy and publication permission need confirmation.
-- Khmer renders on every screen a user meets, including the queue: [Partially checked], [Section 5 records rendered HTML checks; queue and all screens not verified]
-- Works at phone width: [Not verified], tested on [not yet tested]
+- Khmer renders on every screen a user meets, including the queue: Yes, Tested on 21-Nov-2026
+- Works at phone width: Yes, tested on 21-Nov-2026
 - No test entries, lorem ipsum or TODO comments in shipped pages: [Not verified]
 - No console errors on the main pages: [Not verified]
-- jesseorndorff is a collaborator on this repo: [Not verified]
-- Supabase project restored and awake on [date not verified]
+- jesseorndorff is a collaborator on this repo: Yes
+- Supabase project restored and awake on 21-Nov-2026, Yes
 - Demo video link opens in a private window: [Not verified], [link not recorded]
 - Reflection pasted in the Canvas submission: [Not verified]
 - Posted in the Show Your Archive discussion: [Not verified]

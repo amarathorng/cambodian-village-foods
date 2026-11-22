@@ -1,45 +1,29 @@
 // components/LanguageSwitcher.js
-// English / Khmer toggle used in the navigation and the detail page.
-// The active language gets a green border and tint; the inactive one is muted.
-import { colors, fonts } from "./theme.js";
+// English / Khmer segmented control used in the navigation. It changes only
+// interface labels; food names and stories are never translated.
+"use client";
 
-const t = {
-  en: { label: "English" },
-  kh: { label: "ខ្មែរ" },
-};
+const NAMES = { en: "English", kh: "ខ្មែរ" };
 
-export default function LanguageSwitcher({ language, setLanguage, size = "nav" }) {
-  const base = { fontSize: size === "nav" ? 13 : 14 };
+export default function LanguageSwitcher({ language, setLanguage }) {
   return (
     <div
+      className="lang-switch"
       role="group"
-      aria-label="Language"
-      style={{ display: "flex", gap: 6, alignItems: "center" }}
+      aria-label={language === "kh" ? "ភាសា" : "Language"}
     >
-      {["en", "kh"].map((code) => {
-        const active = language === code;
-        return (
-          <button
-            key={code}
-            type="button"
-            onClick={() => setLanguage(code)}
-            aria-pressed={active}
-            style={{
-              ...base,
-              fontFamily: fonts.stack,
-              fontWeight: 600,
-              background: "none",
-              border: `1px solid ${active ? colors.green2 : colors.border}`,
-              color: active ? colors.green2 : colors.muted,
-              borderRadius: 6,
-              padding: size === "nav" ? "3px 10px" : "6px 14px",
-              cursor: "pointer",
-            }}
-          >
-            {t[code].label}
-          </button>
-        );
-      })}
+      {["en", "kh"].map((code) => (
+        <button
+          key={code}
+          type="button"
+          className="lang-btn"
+          aria-pressed={language === code}
+          lang={code === "kh" ? "km" : "en"}
+          onClick={() => setLanguage(code)}
+        >
+          {NAMES[code]}
+        </button>
+      ))}
     </div>
   );
 }

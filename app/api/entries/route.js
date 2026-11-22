@@ -16,7 +16,7 @@ export async function GET(request) {
 
   if (error) {
     return NextResponse.json(
-      { error: "Could not load entries." },
+      { error: "Could not load entries.", code: "load_failed" },
       { status: 500 }
     );
   }
@@ -54,7 +54,7 @@ export async function POST(request) {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) {
     return NextResponse.json(
-      { error: "You must be signed in to add an entry." },
+      { error: "You must be signed in to add an entry.", code: "sign_in_to_contribute" },
       { status: 401 }
     );
   }
@@ -66,37 +66,47 @@ export async function POST(request) {
   const titleEnglish = trimmedField(formData, "title_english");
   const titleKhmer = trimmedField(formData, "title_khmer");
   const description = trimmedField(formData, "description_english");
+  // Optional Khmer story. It is never required: an empty value is stored as
+  // null and the public page falls back to the English story.
+  const descriptionKh = trimmedField(formData, "description_kh");
   const contributor = trimmedField(formData, "contributor");
   const place = trimmedField(formData, "place");
 
   // Server-side validation (defense in depth; the client validates too).
   if (!titleEnglish || titleEnglish.length > 120) {
     return NextResponse.json(
-      { error: "Title must be between 1 and 120 characters." },
+      { error: "Title must be between 1 and 120 characters.", code: "invalid_title" },
       { status: 422 }
     );
   }
   if (!titleKhmer || titleKhmer.length > 120) {
     return NextResponse.json(
-      { error: "Khmer title must be between 1 and 120 characters." },
+      { error: "Khmer title must be between 1 and 120 characters.", code: "invalid_title_kh" },
       { status: 422 }
     );
   }
   if (!description || description.length < 30 || description.length > 3000) {
     return NextResponse.json(
-      { error: "The story must be between 30 and 3000 characters." },
+      { error: "The story must be between 30 and 3000 characters.", code: "invalid_description" },
+      { status: 422 }
+    );
+  }
+  // Optional, but still capped so one field cannot hold an unbounded body.
+  if (descriptionKh.length > 3000) {
+    return NextResponse.json(
+      { error: "The Khmer story must be 3000 characters or fewer.", code: "invalid_description_kh" },
       { status: 422 }
     );
   }
   if (contributor.length > 120) {
     return NextResponse.json(
-      { error: "Contributor name must be 120 characters or fewer." },
+      { error: "Contributor name must be 120 characters or fewer.", code: "invalid_contributor" },
       { status: 422 }
     );
   }
   if (!place || place.length > 200) {
     return NextResponse.json(
-      { error: "Place must be between 1 and 200 characters." },
+      { error: "Place must be between 1 and 200 characters.", code: "invalid_place" },
       { status: 422 }
     );
   }
@@ -106,11 +116,14 @@ export async function POST(request) {
   // uploads instead of trusting the client's filename).
   const photo = formData.get("photo");
   if (!photo || !photo.size) {
-    return NextResponse.json({ error: "A photo is required." }, { status: 422 });
+    return NextResponse.json(
+      { error: "A photo is required.", code: "photo_required" },
+      { status: 422 }
+    );
   }
   if (photo.size > MAX_FILE_BYTES) {
     return NextResponse.json(
-      { error: "The photo must be 5 MB or smaller." },
+      { error: "The photo must be 5 MB or smaller.", code: "photo_too_large" },
       { status: 422 }
     );
   }
@@ -120,7 +133,7 @@ export async function POST(request) {
   const declaredType = String(photo.type || "").toLowerCase();
   if (!ALLOWED_UPLOADS[extension] || ALLOWED_UPLOADS[extension] !== declaredType) {
     return NextResponse.json(
-      { error: "The photo must be a JPG, PNG, WEBP, or GIF image." },
+      { error: "The photo must be a JPG, PNG, WEBP, or GIF image.", code: "photo_type" },
       { status: 422 }
     );
   }
@@ -138,7 +151,7 @@ export async function POST(request) {
   if (uploadError) {
     console.error("Photo upload failed:", uploadError);
     return NextResponse.json(
-      { error: "Could not upload the photo. Please try again." },
+      { error: "Could not upload the photo. Please try again.", code: "photo_upload_failed" },
       { status: 500 }
     );
   }
@@ -156,6 +169,7 @@ export async function POST(request) {
       title_english: titleEnglish,
       title_khmer: titleKhmer,
       description_english: description,
+      description_kh: descriptionKh || null,
       contributor: contributor || null,
       place,
       photo: photoUrl,
@@ -166,7 +180,7 @@ export async function POST(request) {
   if (insertError) {
     console.error("Entry insert failed:", insertError);
     return NextResponse.json(
-      { error: "Could not save the entry. Please try again." },
+      { error: "Could not save the entry. Please try again.", code: "save_failed" },
       { status: 500 }
     );
   }

@@ -10,8 +10,57 @@ import { useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { colors } from "../components/theme.js";
 import ArchiveLogo from "../components/ArchiveLogo.js";
+import { useLanguage } from "../components/useLanguage.js";
+
+// Interface copy only. The archive wordmark stays as the Latin brand mark.
+const t = {
+  en: {
+    brandHeading: "Welcome back.",
+    brandBody: "Return to the foods, memories, and traditions of Cambodian villages.",
+    brandTagline: "FOOD · PLACE · PEOPLE · MEMORY",
+    imageAlt: "Prahok Ang — traditional Cambodian fish grilled in banana leaves",
+    title: "Sign In",
+    sub: "Continue exploring the foods, memories, and stories of Cambodian villages.",
+    invalid: "Invalid email or password",
+    email: "Email address",
+    password: "Password",
+    passwordPlaceholder: "Your password",
+    show: "Show",
+    hide: "Hide",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
+    signingIn: "Signing in…",
+    submit: "Sign In",
+    or: "OR",
+    noAccount: "Don't have an account?",
+    signUp: "Sign Up",
+  },
+  kh: {
+    brandHeading: "សូមស្វាគមន៍ការត្រឡប់មកវិញ។",
+    brandBody: "ត្រឡប់ទៅរកម្ហូប អនុស្សាវរីយ៍ និងប្រពៃណីនៃភូមិខ្មែរ។",
+    brandTagline: "អាហារ · ទីកន្លែង · មនុស្ស · ការចងចាំ",
+    imageAlt: "ប្រហុកអាំង — ត្រីខ្មែរប្រពៃណីអាំងក្នុងស្លឹកចេក",
+    title: "ចូល",
+    sub: "បន្តស្វែងរកម្ហូប អនុស្សាវរីយ៍ និងរឿងរ៉ាវនៃភូមិខ្មែរ។",
+    invalid: "អ៊ីមែល ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ",
+    email: "អាសយដ្ឋានអ៊ីមែល",
+    password: "ពាក្យសម្ងាត់",
+    passwordPlaceholder: "ពាក្យសម្ងាត់របស់អ្នក",
+    show: "បង្ហាញ",
+    hide: "លាក់",
+    showPassword: "បង្ហាញពាក្យសម្ងាត់",
+    hidePassword: "លាក់ពាក្យសម្ងាត់",
+    signingIn: "កំពុងចូល…",
+    submit: "ចូល",
+    or: "ឬ",
+    noAccount: "មិនទាន់មានគណនីទេ?",
+    signUp: "ចុះឈ្មោះ",
+  },
+};
 
 export default function Login() {
+  const [language] = useLanguage();
+  const tUI = t[language] || t.en;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -36,7 +85,7 @@ export default function Login() {
       });
 
       if (error) {
-        setError("Invalid email or password");
+        setError(tUI.invalid);
         return;
       }
 
@@ -59,18 +108,18 @@ export default function Login() {
 
           <img
             className="auth-brand-img"
-            src="/images/prahok-ang.jpg"
-            alt="Prahok Ang — traditional Cambodian fish grilled in banana leaves"
-            width={940}
-            height={350}
+            src="/images/hero-prahok-ang.jpeg"
+            alt={tUI.imageAlt}
+            width={515}
+            height={388}
             fetchPriority="high"
           />
 
-          <h1 className="auth-brand-heading" style={{ color: colors.text }}>
-            Welcome back.
-          </h1>
-          <p className="auth-brand-body" style={{ color: colors.text2 }}>
-            Return to the foods, memories, and traditions of Cambodian villages.
+          <p className="auth-brand-heading">
+            {tUI.brandHeading}
+          </p>
+          <p className="auth-brand-body">
+            {tUI.brandBody}
           </p>
 
           <span className="auth-brand-motif" aria-hidden="true">
@@ -80,27 +129,27 @@ export default function Login() {
           </span>
 
           <p className="auth-brand-tagline" aria-hidden="true">
-            FOOD · PLACE · PEOPLE · MEMORY
+            {tUI.brandTagline}
           </p>
         </aside>
 
         {/* RIGHT — sign-in form */}
         <div className="auth-formpanel">
-          <p className="auth-kicker" style={{ color: colors.gold }}>KHMER LIVING ARCHIVE</p>
-          <h1 className="auth-title" style={{ color: colors.text }}>Sign In</h1>
-          <p className="auth-sub" style={{ color: colors.text2 }}>
-            Continue exploring the foods, memories, and stories of Cambodian villages.
+          <p className="auth-kicker">KHMER LIVING ARCHIVE</p>
+          <h1 className="auth-title">{tUI.title}</h1>
+          <p className="auth-sub">
+            {tUI.sub}
           </p>
 
           {error && (
-            <p className="auth-error" role="alert" style={{ color: colors.danger }}>
+            <p className="auth-error" role="alert">
               {error}
             </p>
           )}
 
           <form onSubmit={handleSubmit} aria-busy={isLoading ? "true" : "false"}>
             <label className="auth-field" htmlFor="login-email">
-              <span className="auth-label">Email address</span>
+              <span className="auth-label">{tUI.email}</span>
               <input
                 id="login-email"
                 type="email"
@@ -114,13 +163,13 @@ export default function Login() {
             </label>
 
             <label className="auth-field" htmlFor="login-password">
-              <span className="auth-label">Password</span>
+              <span className="auth-label">{tUI.password}</span>
               <span className="auth-pass-wrap">
                 <input
                   id="login-password"
                   type={showPassword ? "text" : "password"}
                   className="auth-input auth-password"
-                  placeholder="Your password"
+                  placeholder={tUI.passwordPlaceholder}
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -131,9 +180,9 @@ export default function Login() {
                   className="auth-eye"
                   onClick={() => setShowPassword(!showPassword)}
                   aria-pressed={showPassword}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? tUI.hidePassword : tUI.showPassword}
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? tUI.hide : tUI.show}
                 </button>
               </span>
             </label>
@@ -143,19 +192,19 @@ export default function Login() {
               className="auth-button"
               disabled={isLoading}
             >
-              {isLoading ? "Signing in…" : "Sign In"}
+              {isLoading ? tUI.signingIn : tUI.submit}
             </button>
           </form>
 
           <div className="auth-divider" role="presentation">
             <span className="auth-divider-line" aria-hidden="true" />
-            <span className="auth-divider-text" style={{ color: colors.muted }}>OR</span>
+            <span className="auth-divider-text">{tUI.or}</span>
             <span className="auth-divider-line" aria-hidden="true" />
           </div>
 
-          <p className="auth-switch" style={{ color: colors.text2 }}>
-            Don't have an account?{" "}
-            <a href="/signup" className="auth-link">Sign Up</a>
+          <p className="auth-switch">
+            {tUI.noAccount}{" "}
+            <a href="/signup" className="auth-link">{tUI.signUp}</a>
           </p>
         </div>
       </div>

@@ -1,216 +1,333 @@
 "use client";
 
-import collection from "../collection.config.js";
-import { useEffect, useState } from "react";
-import { colors, fonts, toKhmerNumber } from "../components/theme.js";
+// app/page.js
+// The archive homepage: hero, introduction, featured stories, the searchable
+// collection, the storytelling band, the contribution call-to-action, and
+// "about" information. Data still comes from the existing /api/entries route,
+// which returns published entries only.
+import { useEffect, useMemo, useState } from "react";
+import collection, { collectionText } from "../collection.config.js";
+import { toKhmerNumber } from "../components/theme.js";
+import { useLanguage } from "../components/useLanguage.js";
 import Navbar from "../components/Navbar.js";
 import HeroSection from "../components/HeroSection.js";
 import ArchiveIntroduction from "../components/ArchiveIntroduction.js";
+import FeaturedFoods from "../components/FeaturedFoods.js";
 import FoodSearch from "../components/FoodSearch.js";
 import FoodFilters from "../components/FoodFilters.js";
 import FoodGrid from "../components/FoodGrid.js";
+import ArchiveStory from "../components/ArchiveStory.js";
+import ContributeCta from "../components/ContributeCta.js";
 import CuratorSection from "../components/CuratorSection.js";
 import ArchiveStatement from "../components/ArchiveStatement.js";
 import Footer from "../components/Footer.js";
+import Reveal from "../components/Reveal.js";
+import { getImageSrc } from "../components/image-src.js";
 
-// UI text per language. Food titles/descriptions come from the database; these
-// are interface labels only, and only where the project has a verified Khmer
-// translation.
+// Interface labels only. Food names and stories come from the database and are
+// never translated here. Strings without a verified Khmer translation elsewhere
+// in the project stay in English, matching the existing convention.
 const t = {
   en: {
-    loading: "Loading archive…",
-    error: "Could not load entries.",
-    empty: "No entries in the archive yet.",
-    noResults: "No foods found. Try another search.",
-    resultCount: "Showing",
-    ofFoods: "of",
+    eyebrow: "THE COLLECTION",
+    title: "Explore the Collection",
+    lead: "Browse every published food in the archive. Search by food name, village, contributor, or a phrase from the story.",
+    showing: "Showing",
+    of: "of",
     foods: "foods",
-    reset: "Reset search",
-    collectionLabel: "The Village Food Collection",
-    collectionKhmer: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
+    reset: "Clear search and filters",
+    loading: "Loading the archive…",
+    loadError: "Could not load the archive.",
+    retry: "Try again",
+    empty: "No entries in the archive yet.",
+    emptyHint: "Be the first to add a village food story.",
+    contribute: "Contribute a Story",
+    noResults: "No foods match your search.",
+    noResultsHint: "Try another spelling, a village name, or clear the filters.",
     collectionMeta: (n) => `${String(n).padStart(2, "0")} FOODS`,
     collectionMetaKh: (n) => `${toKhmerNumber(String(n).padStart(2, "0"))} មុខម្ហូប`,
-    collectionSupport: "Explore traditional foods connected to Cambodian villages, families, and communities.",
-    contribute: "Contribute",
   },
   kh: {
-    loading: "កំពុងផ្ទុក…",
-    error: "មិនអាចផ្ទុកធាតុបានទេ។",
-    empty: "មិនទាន់មានធាតុនៅក្នុងបណ្ណសារទេ។",
-    noResults: "រកមិនឃើញធាតុ",
-    resultCount: "បង្ហាញ",
-    ofFoods: "នៃ",
+    eyebrow: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
+    title: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
+    lead: "ស្វែងរកមុខម្ហូបប្រពៃណីដែលទាក់ទងនឹងភូមិ គ្រួសារ និងសហគមន៍ខ្មែរ។",
+    showing: "បង្ហាញ",
+    of: "នៃ",
     foods: "មុខម្ហូប",
     reset: "សម្អាតការស្វែងរក",
-    collectionLabel: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
-    collectionKhmer: "បណ្ដុំម្ហូបអាហារតាមភូមិ",
-    collectionMeta: (n) => `${String(n).padStart(2, "0")} FOODS`,
-    collectionMetaKh: (n) => `${toKhmerNumber(String(n).padStart(2, "0"))} មុខម្ហូប`,
-    collectionSupport: "ស្វែងរកមុខម្ហូបប្រពៃណីដែលទាក់ទងនឹងភូមិ គ្រួសារ និងសហគមន៍ខ្មែរ។",
+    loading: "កំពុងផ្ទុក…",
+    loadError: "មិនអាចផ្ទុកធាតុបានទេ។",
+    retry: "ព្យាយាមម្ដងទៀត",
+    empty: "មិនទាន់មានធាតុនៅក្នុងបណ្ណសារទេ។",
+    emptyHint: "ក្លាយជាអ្នកដំបូងដែលបន្ថែមរឿងរ៉ាវអាហារតាមភូមិ។",
     contribute: "ចូលរួមចំណែក",
+    noResults: "រកមិនឃើញធាតុ",
+    noResultsHint: "សូមព្យាយាមសរសេរខុសគ្នា ឈ្មោះភូមិ ឬសម្អាតតម្រង។",
+    collectionMeta: (n) => `${toKhmerNumber(String(n).padStart(2, "0"))} មុខម្ហូប`,
+    collectionMetaKh: (n) => `${toKhmerNumber(String(n).padStart(2, "0"))} មុខម្ហូប`,
   },
 };
+
+// --- Collection helpers -------------------------------------------------
+
+// Skeleton cards keep the collection area's shape while entries load, so the
+// page does not jump when the real cards arrive.
+function LoadingCollection() {
+  return (
+    <div className="food-grid" aria-hidden="true">
+      {[0, 1, 2].map((item) => (
+        <div className="food-card-skeleton" key={item}>
+          <span className="skeleton skeleton-media" />
+          <div className="food-card-body">
+            <span className="skeleton" style={{ height: 22, width: "68%" }} />
+            <span className="skeleton" style={{ height: 14, width: "42%" }} />
+            <span className="skeleton" style={{ height: 12, width: "92%" }} />
+            <span className="skeleton" style={{ height: 12, width: "80%" }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// One honest empty state for "no entries yet" and "no search results".
+// Buttons only appear when there is a real action behind them.
+function CollectionEmpty({ title, text, action, onAction, secondary, secondaryHref }) {
+  return (
+    <div className="empty-state">
+      <p className="empty-state-motif" aria-hidden="true">✦</p>
+      <h3 className="empty-state-title">{title}</h3>
+      <p className="empty-state-text">{text}</p>
+      <div className="empty-state-actions">
+        {onAction && (
+          <button type="button" className="btn btn--secondary btn--sm" onClick={onAction}>
+            {action}
+          </button>
+        )}
+        {secondaryHref && (
+          <a href={secondaryHref} className="btn btn--primary btn--sm">
+            {secondary}
+            <span className="arrow" aria-hidden="true">→</span>
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
+  const [language, setLanguage] = useLanguage();
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [failed, setFailed] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPlace, setFilterPlace] = useState("");
-  const [language, setLanguage] = useState("en");
-  const tUI = t[language] || t.en;
+  const [reloadKey, setReloadKey] = useState(0);
 
+  // Published entries only — the existing /api/entries route already enforces
+  // that. A failed request shows a retry action rather than a fake empty page.
   useEffect(() => {
     let active = true;
+    setLoading(true);
+    setFailed(false);
 
-    async function loadEntries() {
-      try {
-        const res = await fetch("/api/entries");
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || "Could not load entries.");
-        if (active) setEntries(json.entries);
-      } catch (err) {
-        if (active) setError(err.message);
-      } finally {
-        if (active) setLoading(false);
-      }
-    }
-
-    loadEntries();
+    fetch("/api/entries")
+      .then((response) => {
+        if (!response.ok) throw new Error("Request failed");
+        return response.json();
+      })
+      .then((data) => {
+        if (!active) return;
+        setEntries(Array.isArray(data.entries) ? data.entries : []);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setFailed(true);
+        setLoading(false);
+      });
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [reloadKey]);
 
-  // Search across the fields that actually exist.
-  const filteredEntries = entries.filter((entry) => {
+
+  // Location filters come only from places present in the loaded records —
+  // no invented categories, regions, or ingredients.
+  const locations = useMemo(() => {
+    const seen = new Set();
+    const list = [];
+    entries.forEach((entry) => {
+      const place = (entry.place || "").trim();
+      if (!place || seen.has(place)) return;
+      seen.add(place);
+      list.push({ value: place, label: place });
+    });
+    return list.sort((a, b) => a.label.localeCompare(b.label));
+  }, [entries]);
+
+  // Search covers English name, Khmer name, story text in both languages,
+  // contributor, and place.
+  // Search and the location filter apply together.
+  const visible = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
-    const haystack = [
-      entry.title,
-      entry.khmerTitle,
-      entry.description,
-      entry.contributor,
-      entry.place,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    const matchesSearch = !term || haystack.includes(term);
-    const matchesPlace = !filterPlace || entry.place === filterPlace;
-    return matchesSearch && matchesPlace;
-  });
+    return entries.filter((entry) => {
+      if (filterPlace && (entry.place || "").trim() !== filterPlace) return false;
+      if (!term) return true;
+      const haystack = [
+        entry.title,
+        entry.khmerTitle,
+        entry.description,
+        entry.descriptionKh,
+        entry.contributor,
+        entry.place,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(term);
+    });
+  }, [entries, searchTerm, filterPlace]);
 
-  // Distinct locations derived only from real records.
-  const locationSet = [];
-  entries.forEach((e) => {
-    if (e.place && !locationSet.some((l) => l.value === e.place)) {
-      locationSet.push({ value: e.place, label: e.place.split(",")[0].trim() });
-    }
-  });
+  const hasFilters = searchTerm.trim() !== "" || filterPlace !== "";
+  const resetFilters = () => {
+    setSearchTerm("");
+    setFilterPlace("");
+  };
 
-  const contentMax = { maxWidth: 1180, margin: "0 auto" };
+  // The hero uses the newest real entry photograph; the local archive photo is
+  // the fallback only when no published entry has a displayable image.
+  const heroImage = useMemo(() => {
+    const withPhoto = entries.find((entry) => getImageSrc(entry.image));
+    return withPhoto ? getImageSrc(withPhoto.image) : "/images/Num-Banh-Chok-Khmer.jpg";
+  }, [entries]);
+
+  const tUI = t[language] || t.en;
+
 
   return (
-    <main style={{ backgroundColor: colors.bg, color: colors.text }}>
-      <Navbar language={language} setLanguage={setLanguage} container={contentMax} />
-      <div style={contentMax}>
-        <HeroSection language={language} heroImage="/images/Num-Banh-Chok-Khmer.jpg" />
+    <div className="page">
+      <Navbar language={language} setLanguage={setLanguage} />
+
+      <main id="main-content">
+        <HeroSection
+          language={language}
+          heroImage={heroImage}
+          count={entries.length}
+          places={locations.length}
+        />
+
         <ArchiveIntroduction language={language} />
-      </div>
 
-      <div
-        id="collection"
-        className="collection-section"
-        style={{ ...contentMax, paddingTop: 24 }}
-      >
-        <span className="section-label" style={{ fontFamily: fonts.stack, fontSize: 12, color: colors.muted }}>
-          {tUI.collectionKhmer}
-        </span>
-        <h2 style={{ margin: "14px 0 6px", fontFamily: fonts.stack, fontSize: 34, fontWeight: 700, color: colors.text }}>
-          {tUI.collectionLabel}
-        </h2>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 8 }}>
-          <span className="collection-meta" style={{ fontFamily: fonts.stack, fontSize: 13, letterSpacing: "0.1em", color: colors.green2 }}>
-            {tUI.collectionMeta(entries.length)}
-          </span>
-          <span aria-hidden="true" style={{ color: colors.border }}>/</span>
-          <span className="collection-meta" style={{ fontFamily: fonts.khmer, fontSize: 13, color: colors.text2 }}>
-            {tUI.collectionMetaKh(entries.length)}
-          </span>
-        </div>
-        <p style={{ margin: "12px 0 26px", maxWidth: "60ch", fontFamily: fonts.stack, fontSize: 16, lineHeight: 1.6, color: colors.text2 }}>
-          {tUI.collectionSupport}
-        </p>
-        <button
-          type="button"
-          onClick={() => window.location.href = "/contribute"}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            width: "fit-content",
-            marginTop: 8,
-            marginBottom: 20,
-            padding: "10px 18px",
-            fontFamily: fonts.stack,
-            fontSize: 14,
-            fontWeight: 600,
-            lineHeight: 1,
-            whiteSpace: "nowrap",
-            color: colors.green2,
-            background: "none",
-            border: "1px solid " + colors.border,
-            borderRadius: 8,
-            cursor: "pointer",
-          }}
+        {/* <FeaturedFoods entries={entries} language={language} /> */}
+
+        <section
+          id="collection"
+          className="section collection-section"
+          aria-labelledby="collection-title"
         >
-          {tUI.contribute}
-          <span aria-hidden="true">→</span>
-        </button>
+          <div className="container">
+            <Reveal className="section-head">
+              <div>
+                <p className="eyebrow">{tUI.eyebrow}</p>
+                <h2 id="collection-title" className="section-title">
+                  {tUI.title}
+                </h2>
+                <p className="section-lead">{tUI.lead}</p>
+                <p className="collection-meta-line">
+                  <span>
+                    {language === "kh"
+                      ? tUI.collectionMetaKh(entries.length)
+                      : tUI.collectionMeta(entries.length)}
+                  </span>
+                  <span className="dot" aria-hidden="true">·</span>
+                  <span className={language === "kh" ? "khmer" : ""}>
+                    {language === "kh" ? "ខ្មែរ · English" : "English · ខ្មែរ"}
+                  </span>
+                </p>
+              </div>
+            </Reveal>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 18, marginBottom: 12 }}>
-          <FoodSearch language={language} value={searchTerm} onChange={setSearchTerm} onClear={() => setSearchTerm("")} />
-          <FoodFilters language={language} locations={locationSet} active={filterPlace} onChange={setFilterPlace} />
-        </div>
+            <div className="toolbar">
+              <FoodSearch
+                language={language}
+                value={searchTerm}
+                onChange={setSearchTerm}
+                onClear={() => setSearchTerm("")}
+              />
+              <FoodFilters
+                language={language}
+                locations={locations}
+                active={filterPlace}
+                onChange={setFilterPlace}
+              />
+            </div>
 
-        {loading ? (
-          <p className="status" style={{ color: colors.text2, fontSize: 15 }}>{tUI.loading}</p>
-        ) : error ? (
-          <p className="status" style={{ color: colors.danger, fontSize: 15 }}>{tUI.error}</p>
-        ) : entries.length === 0 ? (
-          <p className="status" style={{ color: colors.text2, fontSize: 15 }}>{tUI.empty}</p>
-        ) : filteredEntries.length === 0 ? (
-          <div className="empty-state" style={{ textAlign: "center", padding: "48px 24px", border: "1px dashed " + colors.border, borderRadius: 14, backgroundColor: colors.bg2 }}>
-            <p style={{ color: colors.text, fontFamily: fonts.stack, fontSize: 18, fontWeight: 600, margin: 0 }}>{tUI.noResults}</p>
-            <button
-              type="button"
-              className="search-clear"
-              onClick={() => {
-                setSearchTerm("");
-                setFilterPlace("");
-              }}
-              style={{ marginTop: 14, fontFamily: fonts.stack, fontSize: 14, color: colors.green2, background: "none", border: "1px solid " + colors.border, borderRadius: 8, padding: "8px 16px", cursor: "pointer" }}
-            >
-              {tUI.reset}
-            </button>
+            <div className="results-line" role="status" aria-live="polite">
+              {loading ? (
+                <span>{tUI.loading}</span>
+              ) : failed ? (
+                <span>{tUI.loadError}</span>
+              ) : (
+                <span>
+                  {tUI.showing} <strong>{visible.length}</strong> {tUI.of}{" "}
+                  <strong>{entries.length}</strong> {tUI.foods}
+                </span>
+              )}
+              {hasFilters && !loading && (
+                <button type="button" className="btn btn--quiet btn--sm" onClick={resetFilters}>
+                  {tUI.reset}
+                </button>
+              )}
+            </div>
+
+            {loading ? (
+              <LoadingCollection />
+            ) : failed ? (
+              <CollectionEmpty
+                title={tUI.loadError}
+                text={tUI.noResultsHint}
+                action={tUI.retry}
+                onAction={() => setReloadKey((key) => key + 1)}
+              />
+            ) : entries.length === 0 ? (
+              <CollectionEmpty
+                title={tUI.empty}
+                text={tUI.emptyHint}
+                secondary={tUI.contribute}
+                secondaryHref="/contribute"
+              />
+            ) : visible.length === 0 ? (
+              <CollectionEmpty
+                title={tUI.noResults}
+                text={tUI.noResultsHint}
+                action={tUI.reset}
+                onAction={resetFilters}
+              />
+            ) : (
+              <FoodGrid entries={entries} visible={visible} language={language} />
+            )}
           </div>
-        ) : (
-          <>
-            <p className="status" role="status" style={{ color: colors.muted, fontSize: 14.5 }}>
-              {tUI.resultCount} {filteredEntries.length} {tUI.ofFoods} {entries.length} {tUI.foods}
-            </p>
-            <FoodGrid entries={entries} visible={filteredEntries} language={language} />
-          </>
-        )}
-      </div>
+        </section>
 
-      <div id="about-info" style={{ ...contentMax, paddingTop: 40 }}>
-        <CuratorSection language={language} curator={collection.curator} />
-        <ArchiveStatement language={language} source={collection.source} />
-      </div>
+        <ArchiveStory language={language} />
 
-      <Footer language={language} copyright="© 2026 Khmer Living Archive" />
-    </main>
+        <ContributeCta language={language} />
+
+        <section id="about" className="section about-section" aria-labelledby="about-title">
+          <div className="container about-grid">
+            <CuratorSection language={language} curator={collectionText(collection.curator, language)} />
+            <ArchiveStatement language={language} source={collectionText(collection.source, language)} />
+          </div>
+        </section>
+      </main>
+
+      <Footer
+        language={language}
+        copyright={`© ${new Date().getFullYear()} Khmer Living Archive`}
+      />
+    </div>
   );
 }
+

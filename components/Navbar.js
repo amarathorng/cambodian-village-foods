@@ -1,298 +1,91 @@
 // components/Navbar.js
-// Minimal editorial navigation, sticky and compact. Aligns to the content
-// container; collapses to an accessible drawer menu on mobile. Reads the
-// user's Supabase session so the header shows login status: an avatar + email +
-// Logout when signed in, or a Login link when signed out. It listens for auth
-// changes so the header updates the moment a user signs in or out.
+// Sticky editorial navigation: archive identity, primary links with an
+// animated active indicator, language switcher, and the session-aware account
+// area. Collapses into an accessible drawer below 940px (see archive.css).
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { createBrowserClient } from "@supabase/ssr";
-import { useRouter } from "next/navigation";
-import { colors, fonts } from "./theme.js";
-import LanguageSwitcher from "./LanguageSwitcher.js";
+import { usePathname, useRouter } from "next/navigation";
+import collection, { collectionText } from "../collection.config.js";
 import ArchiveLogo from "./ArchiveLogo.js";
+import NavActions from "./NavActions.js";
+import NavMenu from "./NavMenu.js";
+import { navLabels } from "./nav-copy.js";
+import { useNavDrawer } from "./useNavDrawer.js";
+import { useSessionUser } from "./useSessionUser.js";
 
-// Khmer interface labels are provided only where a verified translation exists
-// in the project (foods, login, sign up, logout). "Stories", "About" keep English
-// in Khmer mode rather than risk displaying incorrect Khmer text.
-const t = {
-  en: { foods: "Foods", stories: "Stories", about: "About", myEntries: "My entries", review: "Review queue", login: "Login", signUp: "Sign Up", logout: "Logout", menu: "Menu" },
-  kh: {
-    foods: "អាហារ",
-    stories: "រូបភាព",
-    about: "អំពីយើង",
-    // No verified Khmer label yet for the contributor's own page, so it stays
-    // in English rather than displaying a guess.
-    myEntries: "ការបញ្ចូលរបស់ខ្ញុំ",
-    review: "បញ្ជីរង់ចាំត្រួតពិនិត្យ",
-    login: "ចូល",
-    signUp: "ចុះឈ្មោះ",
-    logout: "ចាកចេញ",
-    menu: "ម៉ឺនុយ",
-  },
-};
-
-// Fallback avatar: a lightweight inline person glyph (no image library needed).
-const UserIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    aria-hidden="true"
-  >
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-    <circle cx="12" cy="7" r="4" />
-  </svg>
-);
-
-export default function Navbar({ language, setLanguage, container = {} }) {
-  const tUI = t[language] || t.en;
-  const [open, setOpen] = useState(false);
-  // user is undefined while the session is still resolving, null when signed out,
-  // and the Supabase user object when signed in.
-  const [user, setUser] = useState(undefined);
-  const [isReviewer, setIsReviewer] = useState(false);
-  const supabase = useMemo(
-    () =>
-      createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL,
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-      ),
-    []
-  );
+export default function Navbar({ language, setLanguage }) {
+  const tUI = navLabels[language] || navLabels.en;
+  const brandName = collectionText(collection.name, language);
+  const { user, isReviewer, supabase } = useSessionUser();
   const router = useRouter();
-
-  useEffect(() => {
-    let active = true;
-
-    // Keep the header, and the reviewer-only link, in sync with auth changes.
-    const syncUser = async (nextUser) => {
-      if (!active) return;
-      setUser(nextUser);
-      if (!nextUser) {
-        setIsReviewer(false);
-        return;
-      }
-      const { data } = await supabase.rpc("is_reviewer");
-      if (active) setIsReviewer(data === true);
-    };
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      syncUser(session ? session.user : null);
-    });
-    supabase.auth.getUser().then(({ data }) => syncUser(data.user || null));
-
-    return () => {
-      active = false;
-      authListener?.subscription.unsubscribe();
-    };
-  }, [supabase]);
+  const pathname = usePathname();
+  const { open, setOpen, scrolled } = useNavDrawer(pathname);
 
   async function handleLogout() {
-    // signOut clears the session; refresh the page so server-rendered state
-    // that depends on the cookie catches up. The auth listener already resets
-    // the header to the signed-out view.
     await supabase.auth.signOut();
     router.refresh();
   }
 
-  // Supabase Google/GitHub logins store the avatar URL in the user's metadata.
   const avatarUrl =
     user?.user_metadata?.avatar_url ||
     user?.identities?.[0]?.identity_data?.avatar_url ||
     "";
 
-  const linkStyle = (activeHash) => ({
-    fontFamily: fonts.stack,
-    fontSize: 14,
-    fontWeight: 500,
-    color: colors.text2,
-    textDecoration: "none",
-    padding: "6px 4px",
-    borderBottom: "none",
-    position: "relative",
-  });
-
   const links = [
-    { label: tUI.foods, href: "#collection" },
-    { label: tUI.stories, href: "#introduction" },
-    { label: tUI.about, href: "#about" },
-    // Signed-in contributors get a way into their own tracking page; the
-    // reviewer link stays reviewer-only.
-    ...(user ? [{ label: tUI.myEntries, href: "/my-entries" }] : []),
-    ...(isReviewer ? [{ label: tUI.review, href: "/review" }] : []),
+    { label: tUI.home, href: "/" },
+    { label: tUI.foods, href: "/#collection" },
+    { label: tUI.about, href: "/#about" },
+    { label: tUI.contribute, href: "/contribute" },
   ];
 
+  // Contributors get their own tracking page in the primary navigation. It is
+  // only shown once the session resolves to a signed-in user, so signed-out
+  // visitors never see a link that would just bounce them to the login prompt.
+  if (user) links.push({ label: tUI.myEntries, href: "/my-entries" });
+
   return (
-    <header className="navbar" style={{ position: "sticky", top: 0, zIndex: 50 }}>
-      <div
-        className="navbar-inner"
-        style={{ ...container, display: "flex", alignItems: "center", gap: 16 }}
-      >
-        <a
-          href="/"
-          className="brand"
-          style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", minWidth: 0 }}
-        >
-          <ArchiveLogo size={32} />
-          <span
-            style={{
-              fontFamily: fonts.stack,
-              fontSize: 15,
-              fontWeight: 700,
-              letterSpacing: "0.06em",
-              color: colors.text,
-              whiteSpace: "nowrap",
-            }}
-          >
-            KHMER LIVING ARCHIVE
-          </span>
-        </a>
-
-        <button
-          type="button"
-          className="nav-toggle"
-          aria-expanded={open}
-          aria-controls="navLinks"
-          aria-label={tUI.menu}
-          onClick={() => setOpen(!open)}
-          style={{
-            fontFamily: fonts.stack,
-            fontSize: 14,
-            color: colors.text2,
-            background: "none",
-            border: `1px solid ${colors.border}`,
-            borderRadius: 6,
-            padding: "4px 10px",
-            cursor: "pointer",
-          }}
-        >
-          {tUI.menu}
-        </button>
-
-        <nav id="navLinks" className={`nav-links${open ? " open" : ""}`} aria-label="Primary">
-          {links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              style={linkStyle()}
-            >
-              {l.label}
-            </a>
-          ))}
-          <span
-            className="nav-divider"
-            style={{
-              width: 1,
-              alignSelf: "stretch",
-              backgroundColor: colors.border,
-              margin: "0 2px",
-            }}
-          />
-          <LanguageSwitcher language={language} setLanguage={setLanguage} />
-          {user === undefined ? null : user ? (
-            <div
-              className="nav-user"
-              style={{ display: "flex", alignItems: "center", gap: 10 }}
-            >
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt=""
-                  className="nav-avatar"
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border: `1px solid ${colors.border}`,
-                  }}
-                />
-              ) : (
-                <span
-                  className="nav-avatar"
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: "50%",
-                    backgroundColor: colors.elevated,
-                    border: `1px solid ${colors.border}`,
-                    color: colors.text2,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <UserIcon />
-                </span>
-              )}
-              <span
-                className="nav-user-email"
-                title={user.email}
-                style={{
-                  fontFamily: fonts.stack,
-                  fontSize: 13,
-                  color: colors.text2,
-                  maxWidth: 180,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {user.email}
+    <>
+      <a className="skip-link" href="#main-content">{tUI.skip}</a>
+      <header className={`navbar${scrolled ? " navbar--scrolled" : ""}`}>
+        <div className="navbar-inner">
+          <a href="/" className="brand" aria-label={`${brandName} — ${tUI.homeAria}`}>
+            <ArchiveLogo size={36} />
+            <span className="brand-text">
+              {/* <span className="brand-name">KHMER LIVING ARCHIVE</span> */}
+              <span className={language === "kh" ? "brand-sub khmer" : "brand-sub"}>
+                {brandName}
               </span>
-              <button
-                type="button"
-                className="nav-logout"
-                onClick={handleLogout}
-                style={{
-                  fontFamily: fonts.stack,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: colors.text2,
-                  background: "none",
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: 6,
-                  padding: "6px 14px",
-                  cursor: "pointer",
-                }}
-              >
-                {tUI.logout}
-              </button>
-            </div>
-          ) : (
-            <>
-              <a href="/login" className="nav-auth" style={{ ...linkStyle(), color: colors.text, fontWeight: 600 }}>
-                {tUI.login}
-              </a>
-              <a
-                href="/signup"
-                className="nav-auth"
-                style={{
-                  fontFamily: fonts.stack,
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: colors.text,
-                  backgroundColor: colors.green,
-                  textDecoration: "none",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "6px 14px",
-                }}
-              >
-                {tUI.signUp}
-              </a>
-            </>
-          )}
-        </nav>
-      </div>
-    </header>
+            </span>
+          </a>
+
+          <button
+            type="button"
+            className={`nav-toggle${open ? " is-open" : ""}`}
+            aria-expanded={open}
+            aria-controls="navLinks"
+            aria-label={open ? tUI.closeMenu : tUI.openMenu}
+            onClick={() => setOpen((value) => !value)}
+          >
+            <span className="nav-toggle-bars" aria-hidden="true">
+              <span /><span /><span />
+            </span>
+            {tUI.menu}
+          </button>
+
+          <div id="navLinks" className={`nav-panel${open ? " is-open" : ""}`}>
+            <NavMenu links={links} label={tUI.navLabel} onNavigate={() => setOpen(false)} />
+            <NavActions
+              language={language}
+              setLanguage={setLanguage}
+              user={user}
+              isReviewer={isReviewer}
+              avatarUrl={avatarUrl}
+              onLogout={handleLogout}
+              onNavigate={() => setOpen(false)}
+            />
+          </div>
+        </div>
+      </header>
+    </>
   );
 }

@@ -10,6 +10,9 @@ export function toEntry(row) {
     title: row.title_english,
     khmerTitle: row.title_khmer,
     description: row.description_english,
+    // Optional Khmer story. Empty string (not undefined) when the column is
+    // null, so components can check .trim() without a guard.
+    descriptionKh: row.description_kh || "",
     contributor: row.contributor,
     place: row.place,
     image: row.photo,

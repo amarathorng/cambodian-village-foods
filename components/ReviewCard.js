@@ -1,115 +1,85 @@
 // components/ReviewCard.js
-// One pending submission shown to a reviewer. Decisions are delegated to the
-// parent so this file stays presentational.
-import { colors, fonts } from "./theme.js";
-import { getImageSrc } from "./image-src.js";
+// One pending submission shown to a reviewer. It is presentational: the parent
+// owns the decision dialog and the API call. Publish and return are deliberately
+// different in tone so the safer, public action is not mistaken for the other.
 import StatusBadge from "./StatusBadge.js";
+import { getImageSrc } from "./image-src.js";
 
-function excerpt(text, max = 320) {
+function excerpt(text, max = 300) {
   if (!text) return "";
   return text.length > max ? `${text.slice(0, max).trimEnd()} …` : text;
 }
 
-const buttonStyle = (tone) => ({
-  fontFamily: fonts.stack,
-  fontSize: 14,
-  fontWeight: 700,
-  padding: "9px 16px",
-  borderRadius: 7,
-  cursor: "pointer",
-  color: tone === "publish" ? colors.text : colors.danger,
-  backgroundColor: tone === "publish" ? colors.green : "transparent",
-  border:
-    tone === "publish"
-      ? `1px solid ${colors.green}`
-      : "1px solid rgba(201, 106, 91, 0.55)",
-});
+const t = {
+  en: {
+    open: "Open entry",
+    publish: "Approve & publish",
+    reject: "Return to contributor",
+    working: "Working…",
+  },
+  kh: {
+    open: "បើកធាតុ",
+    publish: "អនុម័ត និងផ្សព្វផ្សាយ",
+    reject: "បញ្ជូនត្រឡប់ទៅអ្នកចូលរួម",
+    working: "កំពុងដំណើរការ…",
+  },
+};
 
-export default function ReviewCard({ entry, busy, onDecision }) {
-  const imgSrc = getImageSrc(entry.image);
+export default function ReviewCard({ entry, busy, language = "en", onRequest }) {
+  const tUI = t[language] || t.en;
+  const image = getImageSrc(entry.image);
 
   return (
-    <article
-      style={{
-        marginTop: 22,
-        padding: 22,
-        borderRadius: 12,
-        backgroundColor: colors.card,
-        border: `1px solid ${colors.border}`,
-      }}
-    >
-      <div style={{ display: "flex", gap: 18, flexWrap: "wrap" }}>
-        {imgSrc ? (
-          <img
-            src={imgSrc}
-            alt={entry.title}
-            width={180}
-            height={140}
-            style={{
-              width: 180,
-              height: 140,
-              objectFit: "cover",
-              borderRadius: 9,
-              display: "block",
-            }}
-          />
-        ) : (
-          <div
-            style={{
-              width: 180,
-              height: 140,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 9,
-              backgroundColor: colors.elevated,
-              color: colors.muted,
-              fontFamily: fonts.stack,
-              fontSize: 13,
-              textAlign: "center",
-              padding: 12,
-            }}
-          >
-            {entry.title}
-          </div>
+    <article className="entry-item">
+      {image ? (
+        <img
+          className="entry-thumb"
+          src={image}
+          alt={entry.title}
+          loading="lazy"
+          decoding="async"
+        />
+      ) : (
+        <div className="entry-thumb entry-thumb--empty">{entry.title}</div>
+      )}
+
+      <div className="entry-body">
+        <StatusBadge status={entry.status} language={language} />
+        <h2 className="entry-title">{entry.title}</h2>
+        {entry.khmerTitle && (
+          <p className="entry-khmer" lang="km">
+            {entry.khmerTitle}
+          </p>
         )}
+        <p className="entry-meta">
+          {[entry.contributor, entry.place].filter(Boolean).join(" · ")}
+        </p>
+        <p className="entry-note">{excerpt(entry.description)}</p>
 
-        <div style={{ flex: 1, minWidth: 240 }}>
-          <StatusBadge status={entry.status} />
-          <h2 style={{ margin: "10px 0 4px", fontFamily: fonts.stack, fontSize: 23, color: colors.text }}>
-            {entry.title}
-          </h2>
-          {entry.khmerTitle && (
-            <p style={{ margin: 0, fontFamily: fonts.khmer, fontSize: 17, color: colors.text2 }}>
-              {entry.khmerTitle}
-            </p>
-          )}
-          <p style={{ margin: "8px 0 0", fontFamily: fonts.stack, fontSize: 13.5, color: colors.muted }}>
-            {[entry.contributor, entry.place].filter(Boolean).join(" · ")}
-          </p>
-          <p style={{ margin: "10px 0 0", fontFamily: fonts.stack, fontSize: 15, lineHeight: 1.6, color: colors.text2 }}>
-            {excerpt(entry.description)}
-          </p>
+        <div className="entry-actions">
+          <a className="btn btn--quiet btn--sm" href={`/food/${entry.id}`}>
+            {tUI.open}
+          </a>
         </div>
-      </div>
 
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 18 }}>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => onDecision(entry.id, "publish")}
-          style={buttonStyle("publish")}
-        >
-          {busy ? "Working…" : "Approve & publish"}
-        </button>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={() => onDecision(entry.id, "reject")}
-          style={buttonStyle("reject")}
-        >
-          Reject and return
-        </button>
+        <div className="review-actions">
+          <button
+            type="button"
+            className="btn btn--primary btn--sm"
+            disabled={busy}
+            onClick={() => onRequest(entry, "publish")}
+          >
+            {busy ? tUI.working : tUI.publish}
+          </button>
+          <button
+            type="button"
+            className="btn btn--danger btn--sm"
+            disabled={busy}
+            onClick={() => onRequest(entry, "reject")}
+          >
+            {tUI.reject}
+          </button>
+        </div>
       </div>
     </article>
   );

@@ -19,13 +19,16 @@ export async function GET(request, { params }) {
   if (error) {
     console.error("Single entry read failed:", error);
     return NextResponse.json(
-      { error: "Could not load the entry." },
+      { error: "Could not load the entry.", code: "load_entry_failed" },
       { status: 500 }
     );
   }
 
   if (!data) {
-    return NextResponse.json({ error: "Entry not found." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Entry not found.", code: "entry_not_found" },
+      { status: 404 }
+    );
   }
 
   // RLS already restricts this query. This explicit check is defense in depth:
@@ -42,14 +45,14 @@ export async function GET(request, { params }) {
       if (reviewerError) {
         console.error("Reviewer check failed:", reviewerError);
         return NextResponse.json(
-          { error: "Could not load the entry." },
+          { error: "Could not load the entry.", code: "reviewer_check_failed" },
           { status: 500 }
         );
       }
 
       if (isReviewer !== true) {
         return NextResponse.json(
-          { error: "Entry not found." },
+          { error: "Entry not found.", code: "entry_not_found" },
           { status: 404 }
         );
       }

@@ -1,43 +1,24 @@
 // components/StatusBadge.js
 // Shared visual label for the review state stored in entries.status.
-import { colors, fonts } from "./theme.js";
-
+// Styling lives in archive.css (.status-badge--pending|published|returned) so
+// the badge matches the design system everywhere it appears.
+//
 // "returned" is the stored value for a submission a reviewer rejected; the
 // entries_status_check constraint allows pending, published, and returned only.
+// Every call site passes the interface language, so the badge is Khmer whenever
+// the reader chose Khmer.
 const LABELS = {
-  pending: "Pending review",
-  published: "Published",
-  returned: "Not published",
+  en: { pending: "Pending review", published: "Published", returned: "Not published" },
+  kh: { pending: "រង់ចាំការត្រួតពិនិត្យ", published: "បានចេញផ្សាយ", returned: "មិនបានចេញផ្សាយ" },
 };
 
-const TONES = {
-  pending: colors.gold,
-  published: colors.green2,
-  returned: colors.danger,
-};
-
-export default function StatusBadge({ status }) {
+export default function StatusBadge({ status, language = "en" }) {
   if (!status) return null;
+  const labels = LABELS[language] || LABELS.en;
 
   return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        width: "fit-content",
-        padding: "4px 9px",
-        borderRadius: 999,
-        border: `1px solid ${TONES[status] || colors.border}`,
-        color: TONES[status] || colors.text2,
-        fontFamily: fonts.stack,
-        fontSize: 12,
-        fontWeight: 600,
-        letterSpacing: "0.04em",
-        textTransform: "uppercase",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {LABELS[status] || status}
+    <span className={`status-badge status-badge--${status}`}>
+      {labels[status] || status}
     </span>
   );
 }

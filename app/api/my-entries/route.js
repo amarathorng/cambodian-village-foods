@@ -14,7 +14,7 @@ export async function GET(request) {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) {
     return NextResponse.json(
-      { error: "You must be signed in to see your entries." },
+      { error: "You must be signed in to see your entries.", code: "sign_in_my_entries" },
       { status: 401 }
     );
   }
@@ -30,7 +30,7 @@ export async function GET(request) {
   if (error) {
     console.error("My entries read failed:", error);
     return NextResponse.json(
-      { error: "Could not load your entries." },
+      { error: "Could not load your entries.", code: "my_entries_failed" },
       { status: 500 }
     );
   }

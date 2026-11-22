@@ -1,24 +1,26 @@
 // components/StatusSummary.js
 // Counters for the contributor's own entries: how many are waiting, published,
-// or returned. Presentational — the parent passes the entries it loaded.
-import { colors, fonts } from "./theme.js";
-
+// or returned. Presentational — the parent passes the entries it loaded, so the
+// numbers are always real.
+//
 // "returned" is the stored value for a submission a reviewer rejected; see
 // StatusBadge.js and supabase/review_entry.sql.
 const t = {
-  en: { pending: "Pending review", published: "Published", returned: "Returned to you" },
-  // Unverified Khmer interface strings stay in English, matching the rest of the
-  // project; only verified labels are translated.
-  kh: { pending: "Pending review", published: "Published", returned: "Returned to you" },
+  en: {
+    pending: "Pending review",
+    published: "Published",
+    returned: "Returned to you",
+    label: "Submission status summary",
+  },
+  kh: {
+    pending: "រង់ចាំការត្រួតពិនិត្យ",
+    published: "បានចេញផ្សាយ",
+    returned: "បានបញ្ជូនមកវិញ",
+    label: "សេចក្ដីសង្ខេបស្ថានភាពនៃការដាក់ស្នើ",
+  },
 };
 
 const ORDER = ["pending", "published", "returned"];
-
-const TONES = {
-  pending: colors.gold,
-  published: colors.green2,
-  returned: colors.danger,
-};
 
 export default function StatusSummary({ entries = [], language }) {
   const tUI = t[language] || t.en;
@@ -29,46 +31,11 @@ export default function StatusSummary({ entries = [], language }) {
   });
 
   return (
-    <section
-      aria-label="Submission status summary"
-      style={{ display: "flex", gap: 12, flexWrap: "wrap", margin: "22px 0 4px" }}
-    >
+    <section className="summary-grid" aria-label={tUI.label}>
       {ORDER.map((status) => (
-        <div
-          key={status}
-          style={{
-            flex: "1 1 150px",
-            padding: "14px 16px",
-            borderRadius: 10,
-            backgroundColor: colors.card,
-            border: `1px solid ${colors.border}`,
-          }}
-        >
-          <span
-            style={{
-              display: "block",
-              fontFamily: fonts.stack,
-              fontSize: 26,
-              fontWeight: 700,
-              lineHeight: 1,
-              color: TONES[status],
-            }}
-          >
-            {counts[status]}
-          </span>
-          <span
-            style={{
-              display: "block",
-              marginTop: 7,
-              fontFamily: fonts.stack,
-              fontSize: 12.5,
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              color: colors.text2,
-            }}
-          >
-            {tUI[status]}
-          </span>
+        <div className={`summary-card summary-card--${status}`} key={status}>
+          <span className="summary-value">{counts[status]}</span>
+          <span className="summary-label">{tUI[status]}</span>
         </div>
       ))}
     </section>

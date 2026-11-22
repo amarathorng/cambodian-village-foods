@@ -23,7 +23,7 @@ export async function PATCH(request, { params }) {
   const { data: userData, error: userError } = await supabase.auth.getUser();
   if (userError || !userData.user) {
     return NextResponse.json(
-      { error: "You must be signed in to review entries." },
+      { error: "You must be signed in to review entries.", code: "sign_in_to_review" },
       { status: 401 }
     );
   }
@@ -34,14 +34,14 @@ export async function PATCH(request, { params }) {
   if (reviewerError) {
     console.error("Reviewer check failed:", reviewerError);
     return NextResponse.json(
-      { error: "Could not verify reviewer access." },
+      { error: "Could not verify reviewer access.", code: "reviewer_check_failed" },
       { status: 500 }
     );
   }
 
   if (isReviewer !== true) {
     return NextResponse.json(
-      { error: "You do not have reviewer access." },
+      { error: "You do not have reviewer access.", code: "no_reviewer_access" },
       { status: 403 }
     );
   }
@@ -50,13 +50,13 @@ export async function PATCH(request, { params }) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request.", code: "invalid_request" }, { status: 400 });
   }
 
   const choice = DECISIONS[body?.decision];
   if (!choice) {
     return NextResponse.json(
-      { error: "Decision must be publish or reject." },
+      { error: "Decision must be publish or reject.", code: "invalid_decision" },
       { status: 422 }
     );
   }
@@ -82,6 +82,7 @@ export async function PATCH(request, { params }) {
           ? "The review_entry database function is out of date. Run " +
             "supabase/review_entry.sql in the Supabase SQL editor, then try again."
           : "Could not review this entry.",
+        code: staleFunction ? "review_function_stale" : "review_failed",
       },
       { status: 400 }
     );
@@ -99,6 +100,7 @@ export async function PATCH(request, { params }) {
           "The database refused this decision and the entry was not changed. " +
           "Check that supabase/review_entry.sql has been run and that the " +
           "entry is still pending.",
+        code: "review_refused",
       },
       { status: 409 }
     );
@@ -119,7 +121,7 @@ export async function PATCH(request, { params }) {
   } else if (updated && updated.status !== choice.status) {
     console.error("Review did not change status:", updated.status, choice);
     return NextResponse.json(
-      { error: "The review did not change the entry status." },
+      { error: "The review did not change the entry status.", code: "review_status_unchanged" },
       { status: 409 }
     );
   }
