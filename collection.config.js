@@ -1,12 +1,3 @@
-// ============================================================
-//  YOUR ARCHIVE STARTS HERE
-//
-//  This file holds the archive's identity in both languages.
-//  Every page reads these values; nothing is hard-coded.
-//  Use collectionText(value, language) to pick the language
-//  that is currently being viewed.
-// ============================================================
-
 const collection = {
   // What does your archive collect? e.g. "Khmer Proverbs"
   name: {
